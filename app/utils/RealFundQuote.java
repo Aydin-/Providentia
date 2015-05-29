@@ -112,7 +112,7 @@ public class RealFundQuote implements StockQuote {
 
 
   public List<Holding> getFundHoldings(String fund) {
-    String csvFile = "/Users/aydin.gungordu/dev/" + fund + ".csv";
+    String csvFile = "public/csv/" + fund + ".csv";
     BufferedReader br = null;
     String line;
     List<Holding> retval = new ArrayList<>();

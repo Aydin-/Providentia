@@ -1,17 +1,7 @@
 package actors
 
-import java.lang
-
-import akka.actor._
-import akka.testkit._
-
 import org.specs2.mutable._
 import org.specs2.time.NoTimeConversions
-
-import scala.concurrent.duration._
-import scala.collection.immutable.HashSet
-
-import utils.StockQuote
 
 class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeConversions {
 
@@ -20,8 +10,7 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
    * shared resources are used (e.g. top-level actors with the same name or the
    * system.eventStream).
    *
-   * It's usually safer to run the tests sequentially.
-   */
+
   sequential
 
   final class StockActorWithStockQuote(symbol: String, price: Double, watcher: ActorRef) extends StockActor(symbol) {
@@ -91,4 +80,6 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
     }
 
   }
+   * It's usually safer to run the tests sequentially.
+   */
 }
