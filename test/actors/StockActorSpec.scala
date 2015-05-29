@@ -31,7 +31,7 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
       val price = 1234.0
       val stockActor = system.actorOf(Props(new StockActorWithStockQuote(symbol, price, probe.ref)))
 
-      system.actorOf(Props(new ProbeWrapper(probe)))
+      system.actorOf(Props(new ProbeWrapper(probe)))F
 
       // Fire off the message...
       stockActor ! FetchLatest

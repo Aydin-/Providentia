@@ -54,13 +54,6 @@ public class UserActor extends UntypedActor {
       fundUpdateMessage.put("type", "fundupdate");
       fundUpdateMessage.put("percentage", fundUpdate.percentage());
 
-      if (counter % 2 == 0) {
-        fundUpdateMessage.put("mycontainer", "#stocks2");
-      } else {
-        fundUpdateMessage.put("mycontainer", "#stocks1");
-      }
-      counter++;
-
       out.write(fundUpdateMessage);
     } else if (message instanceof StockHistory) {
       // push the history to the client
@@ -82,6 +75,7 @@ public class UserActor extends UntypedActor {
       ObjectNode progressBarMessage = Json.newObject();
       progressBarMessage.put("type", "progressbar");
       progressBarMessage.put("totalPercentage", progressBar.percentChange());
+      progressBarMessage.put("progressMessage", "Estimating value change..");
       out.write(progressBarMessage);
 
     }

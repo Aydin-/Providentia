@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 
@@ -13,18 +15,22 @@ import com.google.gson.Gson;
 /**
  * Get a real stock quote
  */
-public class RealStockQuote implements StockQuote {
+public class StockQuoteImpl implements StockQuote {
 
   public StockPage stockPage;
-
+  Logger log = Logger.getGlobal();
 
   public Double newPrice(String symbol) throws IOException {
 
     try {
       stockPage = parseStock(symbol);
-      return Double.parseDouble(stockPage.query.results.quote.LastTradePriceOnly);
+      if (stockPage.query.results.quote.LastTradePriceOnly != null)
+        return Double.parseDouble(stockPage.query.results.quote.LastTradePriceOnly);
+      else
+        return Double.parseDouble(stockPage.query.results.quote.ask);
     } catch (Exception e) {
-      System.out.println("---- Cannot get current price for:" + symbol);
+      log.log(Level.WARNING, "---- Cannot get current price for:" + symbol);
+      e.printStackTrace();
       return 0.0;
     }
   }
@@ -33,12 +39,11 @@ public class RealStockQuote implements StockQuote {
   public String newPercentage(String symbol) {
     try {
       stockPage = parseStock(symbol);
-      return (stockPage.query.results.quote.PercentChange);
+      return stockPage.query.results.quote.PercentChange;
     } catch (Exception e) {
-      System.out.println("---- Cannot get percent change for " + symbol);
-      return "";
+      log.log(Level.SEVERE, "--------- CANNOT GET STOCKPAGE ----  symbol:" + symbol + e.getClass());
     }
-
+    return "0.0";
   }
 
   private String readUrl(String urlString, int attempt) throws Exception {
@@ -55,7 +60,7 @@ public class RealStockQuote implements StockQuote {
 
       return buffer.toString();
     } catch (Exception e) {
-      System.out.println("Trying again...");
+      log.info("Trying again...");
       Thread.sleep(500);
       if (attempt < 4)
         return readUrl(urlString, attempt + 1);
@@ -69,7 +74,7 @@ public class RealStockQuote implements StockQuote {
   }
 
   public StockPage parseStock(String stock) throws Exception {
-    //System.out.println("Parsing "+stock);
+    //log.info("Parsing "+stock);
     String json = readUrl(getURL(stock.trim()), 1);
     Gson gson = new Gson();
     return gson.fromJson(json, StockPage.class);

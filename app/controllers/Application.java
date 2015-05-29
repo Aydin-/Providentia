@@ -3,29 +3,38 @@ package controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import actors.FundUpdate;
+import actors.ProgressBar;
+import actors.StockActor;
 import actors.StocksActor;
 import actors.UnwatchStock;
 import actors.UserActor;
 import actors.WatchStock;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+
 import play.libs.Akka;
 import play.libs.F;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
 import scala.Option;
-import utils.RealFundQuote;
+import utils.FundQuote;
+
+import java.util.logging.*;
 
 
 /**
  * The main web controller that handles returning the index page, setting up a WebSocket, and watching a stock.
  */
 public class Application extends Controller {
+  static Logger log = Logger.getGlobal();
 
   public static Result index() {
     return ok(views.html.index.render());
@@ -42,11 +51,13 @@ public class Application extends Controller {
         in.onMessage(new F.Callback<JsonNode>() {
                        @Override
                        public void invoke(JsonNode jsonNode) throws Throwable {
-                         RealFundQuote rfq = new RealFundQuote();
+                         FundQuote rfq = new FundQuote();
 
-                         List<RealFundQuote.Holding> holdings = rfq.getFundHoldings(jsonNode.get("symbol").textValue());
+                         List<FundQuote.Holding> holdings = rfq.getFundHoldings(jsonNode.get("symbol").textValue());
+                         Double progress = 0.0;
+                         Double counter = 1.0;
 
-                         for (RealFundQuote.Holding holding : holdings) {
+                         for (FundQuote.Holding holding : holdings) {
                            String symbol = "";
                            if (symbolMap.get(holding.name) != null) {
                              symbol = symbolMap.get(holding.name);
@@ -57,42 +68,53 @@ public class Application extends Controller {
 
                                symbolMap.put(holding.name, symbol);
                              } else {
-                               String possibleSymbol = RealFundQuote.getStockSymbol(holding.name);
+                               String possibleSymbol = FundQuote.getStockSymbol(holding.name);
                                if (possibleSymbol.length() > 1) {
                                  symbol = possibleSymbol;
 
                                  symbolMap.put(holding.name, symbol);
                                } else {
-                                 System.out.println("Still no symbol for " + holding.name);
+                                 log.log(Level.WARNING, "Still no symbol for " + holding.name);
+
                                }
                              }
-
                            }
 
                            if (symbol.length() > 1) {
-                             System.out.println("Watching symbol: " + symbol);
+                             log.info("Watching symbol: " + symbol);
                              WatchStock watchStock = new WatchStock(symbol.trim());
                              StocksActor.stocksActor().tell(watchStock, userActor);
                              userActor.tell(watchStock, StocksActor.stocksActor());
                              holding.symbol = symbol;
-
                            }
+
+                           progress = counter / holdings.size() * 100.0;
+                           counter++;
+
+                           ObjectNode progressBarMessage = Json.newObject();
+                           progressBarMessage.put("type", "progressbar");
+                           progressBarMessage.put("totalPercentage", progress.intValue());
+                           progressBarMessage.put("progressMessage", "Getting fund holdings - ");
+                           out.write(progressBarMessage);
                          }
 
-                         FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue()  + RealFundQuote.getFundChange(holdings, userActor));
+                         FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue() + FundQuote.getFundChange(holdings, userActor));
                          userActor.tell(fundUpdate, StocksActor.stocksActor());
                        }
                      }
 
         );
 
-        in.onClose(new F.Callback0()
-
-                   {
+        in.onClose(new F.Callback0() {
                      @Override
                      public void invoke() throws Throwable {
                        final Option<String> none = Option.empty();
-                       //   StocksActor.stocksActor().tell(new UnwatchStock(none), userActor);
+
+                       for (String symbol : symbolMap.values()) {
+                         StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
+                         log.log(Level.INFO, "Unwatching " + symbol);
+                       }
+
                        Akka.system().stop(userActor);
                      }
                    }

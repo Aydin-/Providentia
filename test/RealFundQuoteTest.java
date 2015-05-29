@@ -2,13 +2,13 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import utils.RealFundQuote;
+import utils.FundQuote;
 
 public class RealFundQuoteTest {
 
   @Test
   public void realFundTest() throws IOException {
-    RealFundQuote fundQuote = new RealFundQuote();
+    FundQuote fundQuote = new FundQuote();
 
     System.out.println(fundQuote.getFundHoldings("DNBNorgeIndex"));
   }

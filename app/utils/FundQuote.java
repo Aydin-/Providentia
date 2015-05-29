@@ -10,27 +10,30 @@ import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import actors.ProgressBar;
 import actors.StocksActor;
 import akka.actor.ActorRef;
 
-public class RealFundQuote implements StockQuote {
+public class FundQuote implements StockQuote {
+
+  static Logger log = Logger.getGlobal();
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
     BigDecimal totalPercentage = new BigDecimal("0.0");
 
-    RealStockQuote rsq = new RealStockQuote();
+    StockQuoteImpl rsq = new StockQuoteImpl();
     for (Holding holding : holdings) {
       try {
         if (holding.symbol != null) {
-          RealStockQuote.StockPage stockPage = rsq.parseStock(holding.symbol.trim());
+          StockQuoteImpl.StockPage stockPage = rsq.parseStock(holding.symbol.trim());
 
           String changeToday = stockPage.query.results.quote.PercentChange.replace('+', ' ');
           changeToday = changeToday.replace('%', ' ').trim();
 
-          System.out.println("This holding" + holding + " TOTAL: " + totalPercentage);
+          log.info(holding + " Total: " + totalPercentage);
 
           BigDecimal weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(new BigDecimal("100.0"));
           totalWeightedChange = totalWeightedChange.add(weightedChange);
@@ -42,7 +45,7 @@ public class RealFundQuote implements StockQuote {
         }
 
       } catch (Exception e) {
-        System.out.println("Exception getting: " + holding.symbol);
+        log.severe("Exception getting: " + holding.symbol);
       }
     }
 

@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import play.libs.Akka
-import utils.{RealStockQuote, StockQuote}
+import utils.{StockQuoteImpl, StockQuote}
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashSet, Queue}
@@ -16,7 +16,7 @@ import scala.concurrent.duration._
 
 class StockActor(symbol: String) extends Actor {
 
-  lazy val stockQuote: StockQuote = new RealStockQuote
+  lazy val stockQuote: StockQuote = new StockQuoteImpl
   
   protected[this] var watchers: HashSet[ActorRef] = HashSet.empty[ActorRef]
 
@@ -71,6 +71,7 @@ class StocksActor extends Actor {
 
 object StocksActor {
   lazy val stocksActor: ActorRef = Akka.system.actorOf(Props(classOf[StocksActor]))
+  def getOptionString(symbol:String) = Option (symbol)
 }
 
 
@@ -87,3 +88,4 @@ case class ProgressBar(percentChange: Integer);
 case class WatchStock(symbol: String)
 
 case class UnwatchStock(symbol: Option[String])
+

@@ -18,8 +18,6 @@ $ ->
     event.preventDefault()
     # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
-    # reset the form
-    $("#addsymboltext").val("")
 
 getPricesFromArray = (data) ->
   (v[1] for v in data)
@@ -54,13 +52,15 @@ populateStockHistory = (message) ->
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
 updateProgressBar = (message) ->
-  $('.bar').text(message.totalPercentage+ "%");
+  $('.bar').text(message.progressMessage + " " +message.totalPercentage+ "%");
   $('.bar').width(message.totalPercentage + "%")
 
 updateFundChange = (message) ->
   $("#fund").append($("<h3>").text(message.percentage))
-  $('.progress').removeClass('active');
   $('.bar').width("100%")
+  $('.bar').text("Estimation complete")
+  $('.progress').removeClass('active');
+
 
 updateStockChart = (message) ->
   if ($("#" + message.symbol).size() > 0)
