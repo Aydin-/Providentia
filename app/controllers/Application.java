@@ -55,7 +55,7 @@ public class Application extends Controller {
             StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
             log.log(Level.INFO, "Unwatching " + symbol);
           }
-          //  symbolMap=new HashMap<String, String>();
+
           String symbol;
           for (FundQuote.Holding holding : holdings) {
             symbol = "";
@@ -100,7 +100,6 @@ public class Application extends Controller {
             }
 
           }
-
           FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue() + FundQuote.getFundChange(holdings, userActor));
           userActor.tell(fundUpdate, StocksActor.stocksActor());
         }

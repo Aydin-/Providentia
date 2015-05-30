@@ -24,13 +24,10 @@ public class FundQuote implements StockQuote {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
     BigDecimal totalPercentage = new BigDecimal("0.0");
 
-    StockQuoteImpl rsq = new StockQuoteImpl();
     for (Holding holding : holdings) {
       try {
         if (holding != null && holding.symbol != null) {
-          StockQuoteImpl.StockPage stockPage = rsq.parseStock(holding.symbol.trim());
-
-          String changeToday = "" + rsq.newPercentage(holding.symbol.trim());
+          String changeToday = "" + StockQuoteImpl.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
           log.info(holding + " Total: " + totalPercentage);

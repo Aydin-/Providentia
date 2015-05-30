@@ -18,12 +18,11 @@ import com.google.gson.Gson;
  */
 public class StockQuoteImpl implements StockQuote {
 
-  public StockPage stockPage;
   Logger log = Logger.getGlobal();
-  HashMap<String, String> percentageCache = new HashMap<>();
+  static HashMap<String, String> percentageCache = new HashMap<>();
 
   public Double newPrice(String symbol) throws IOException {
-
+    StockPage stockPage;
     try {
       stockPage = parseStock(symbol);
       if (stockPage.query.results.quote.LastTradePriceOnly != null)
@@ -42,6 +41,7 @@ public class StockQuoteImpl implements StockQuote {
 
   @Override
   public String newPercentage(String symbol) {
+    StockPage stockPage;
     try {
       stockPage = parseStock(symbol);
 
@@ -55,6 +55,28 @@ public class StockQuoteImpl implements StockQuote {
 
     } catch (Exception e) {
       log.log(Level.WARNING, "--------- Cannot get stockPage for symbol:" + symbol + e.getClass());
+    }
+    return "-9.999";
+  }
+
+  public static String newPercentageStatic(String symbol) {
+    try {
+      if(percentageCache.containsKey(symbol))
+        return percentageCache.get(symbol);
+
+      StockPage stockPage;
+      stockPage = new StockQuoteImpl().parseStock(symbol);
+
+      if (stockPage.query.results.quote.ChangePercentRealtime != null) {
+        percentageCache.put(symbol, stockPage.query.results.quote.ChangePercentRealtime);
+        return stockPage.query.results.quote.ChangePercentRealtime;
+      } else if (stockPage.query.results.quote.PercentChange != null) {
+        percentageCache.put(symbol, stockPage.query.results.quote.PercentChange);
+        return stockPage.query.results.quote.PercentChange;
+      }
+
+    } catch (Exception e) {
+      e.printStackTrace();
     }
     return "0.0";
   }

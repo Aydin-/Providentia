@@ -25,7 +25,7 @@ class StockActor(symbol: String) extends Actor {
   // A random data set which uses stockQuote.newPrice to get each data point
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
-    initialPrices.take(5).to[Queue]
+    initialPrices.take(15).to[Queue]
   }
   
   // Fetch the latest stock value every
@@ -37,10 +37,10 @@ class StockActor(symbol: String) extends Actor {
       val newPrice = stockQuote.newPrice(symbol)
       stockHistory = stockHistory :+ newPrice
       // notify watchers
-      watchers.foreach(_ ! StockUpdate(symbol, newPrice, stockQuote.newPercentage(symbol)))
+      watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuoteImpl.newPercentageStatic(symbol)))
     case WatchStock(_) =>
       // send the stock history to the user
-      sender ! StockHistory(symbol, stockHistory.asJava, stockQuote.newPercentage(symbol))
+      sender ! StockHistory(symbol, stockHistory.asJava, StockQuoteImpl.newPercentageStatic(symbol))
       // add the watcher to the list
       watchers = watchers + sender
     case UnwatchStock(_) =>
@@ -85,7 +85,7 @@ case class StockUpdate(symbol: String, price: Number, percentage: String)
 
 case class StockHistory(symbol: String, history: java.util.List[java.lang.Double], percentage: String)
 
-case class ProgressBar(percentChange: Integer);
+case class ProgressBar(percentChange: Integer)
 
 case class WatchStock(symbol: String)
 
