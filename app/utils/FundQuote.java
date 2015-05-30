@@ -27,10 +27,10 @@ public class FundQuote implements StockQuote {
     StockQuoteImpl rsq = new StockQuoteImpl();
     for (Holding holding : holdings) {
       try {
-        if (holding.symbol != null) {
+        if (holding != null && holding.symbol != null) {
           StockQuoteImpl.StockPage stockPage = rsq.parseStock(holding.symbol.trim());
 
-          String changeToday = stockPage.query.results.quote.PercentChange.replace('+', ' ');
+          String changeToday = "" + rsq.newPercentage(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
           log.info(holding + " Total: " + totalPercentage);
@@ -50,7 +50,7 @@ public class FundQuote implements StockQuote {
       }
     }
 
-    return "fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
+    return " fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
   }
 
   private static String getURL(String name) {
@@ -128,16 +128,18 @@ public class FundQuote implements StockQuote {
         String[] lineValues = line.split(",");
 
         String percentStr = "0";
-        if(lineValues[1]!=null) {
-          percentStr=lineValues[1].replace('\"', ' ').replace(',', '.');
-        }
+        if (lineValues.length > 1) {
+          if (lineValues[1] != null) {
+            percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
+          }
 
-        BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
+          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
 
-        if (lineValues.length >= 5) {
-          retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));
-        } else {
-          retval.add(new Holding(null, lineValues[0], percentHolding));
+          if (lineValues.length >= 5) {
+            retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));
+          } else {
+            retval.add(new Holding(null, lineValues[0], percentHolding));
+          }
         }
       }
       return retval;

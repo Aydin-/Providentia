@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +20,7 @@ public class StockQuoteImpl implements StockQuote {
 
   public StockPage stockPage;
   Logger log = Logger.getGlobal();
+  HashMap<String, String> percentageCache = new HashMap<>();
 
   public Double newPrice(String symbol) throws IOException {
 
@@ -26,8 +28,11 @@ public class StockQuoteImpl implements StockQuote {
       stockPage = parseStock(symbol);
       if (stockPage.query.results.quote.LastTradePriceOnly != null)
         return Double.parseDouble(stockPage.query.results.quote.LastTradePriceOnly);
-      else
+      else if (stockPage.query.results.quote.ask != null)
         return Double.parseDouble(stockPage.query.results.quote.ask);
+      else {
+        return 0.0;
+      }
     } catch (Exception e) {
       log.log(Level.WARNING, "---- Cannot get current price for:" + symbol);
       e.printStackTrace();
@@ -39,9 +44,17 @@ public class StockQuoteImpl implements StockQuote {
   public String newPercentage(String symbol) {
     try {
       stockPage = parseStock(symbol);
-      return stockPage.query.results.quote.PercentChange;
+
+      if (stockPage.query.results.quote.ChangePercentRealtime != null) {
+        percentageCache.put(symbol, stockPage.query.results.quote.ChangePercentRealtime);
+        return stockPage.query.results.quote.ChangePercentRealtime;
+      } else if (stockPage.query.results.quote.PercentChange != null) {
+        percentageCache.put(symbol, stockPage.query.results.quote.PercentChange);
+        return stockPage.query.results.quote.PercentChange;
+      }
+
     } catch (Exception e) {
-      log.log(Level.SEVERE, "--------- CANNOT GET STOCKPAGE ----  symbol:" + symbol + e.getClass());
+      log.log(Level.WARNING, "--------- Cannot get stockPage for symbol:" + symbol + e.getClass());
     }
     return "0.0";
   }

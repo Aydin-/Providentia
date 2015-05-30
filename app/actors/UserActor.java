@@ -10,7 +10,9 @@ import play.Play;
 import play.libs.Json;
 import play.mvc.WebSocket;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The broker between the WebSocket and the StockActor(s).  The UserActor holds the connection and sends serialized
@@ -20,7 +22,6 @@ import java.util.List;
 public class UserActor extends UntypedActor {
 
   private final WebSocket.Out<JsonNode> out;
-  private int counter = 1;
 
   public UserActor(WebSocket.Out<JsonNode> out) {
     this.out = out;
@@ -33,9 +34,6 @@ public class UserActor extends UntypedActor {
     }
   }
 
-  public void addSymbol(String symbol) {
-    StocksActor.stocksActor().tell(new WatchStock(symbol), getSelf());
-  }
 
   public void onReceive(Object message) {
     if (message instanceof StockUpdate) {

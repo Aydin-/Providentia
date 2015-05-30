@@ -6,6 +6,7 @@ import utils.{StockQuoteImpl, StockQuote}
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashSet, Queue}
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
@@ -19,6 +20,7 @@ class StockActor(symbol: String) extends Actor {
   lazy val stockQuote: StockQuote = new StockQuoteImpl
   
   protected[this] var watchers: HashSet[ActorRef] = HashSet.empty[ActorRef]
+  protected[this] var changeMap:mutable.HashMap[String, String]= new mutable.HashMap[String, String]
 
   // A random data set which uses stockQuote.newPrice to get each data point
   var stockHistory: Queue[java.lang.Double] = {
@@ -26,14 +28,14 @@ class StockActor(symbol: String) extends Actor {
     initialPrices.take(5).to[Queue]
   }
   
-  // Fetch the latest stock value every 10000ms TODO:
-  val stockTick = context.system.scheduler.schedule(Duration.Zero, 2500.millis, self, FetchLatest)
+  // Fetch the latest stock value every
+  val stockTick = context.system.scheduler.schedule(Duration.Zero, 15000.millis, self, FetchLatest)
 
   def receive = {
     case FetchLatest =>
       // add a new stock price to the history and drop the oldest
       val newPrice = stockQuote.newPrice(symbol)
-      stockHistory = stockHistory.drop(1) :+ newPrice
+      stockHistory = stockHistory :+ newPrice
       // notify watchers
       watchers.foreach(_ ! StockUpdate(symbol, newPrice, stockQuote.newPercentage(symbol)))
     case WatchStock(_) =>
