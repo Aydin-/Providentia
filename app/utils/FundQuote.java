@@ -23,7 +23,7 @@ public class FundQuote implements StockQuote {
   public static String getFundChange(List<Holding> holdings, ActorRef actor) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
     BigDecimal totalPercentage = new BigDecimal("0.0");
-
+System.out.println("got here");
     StockQuoteImpl rsq = new StockQuoteImpl();
     for (Holding holding : holdings) {
       try {

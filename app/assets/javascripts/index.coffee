@@ -16,7 +16,6 @@ $ ->
 
   $("#addsymbolform").submit (event) ->
     event.preventDefault()
-    # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
 
 getPricesFromArray = (data) ->
@@ -49,8 +48,8 @@ populateStockHistory = (message) ->
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
   li = $("<li>").prepend(flipContainer)
-
-  if(message.percentage.substring(1, message.percentage.length-1) > 0.0)
+  alert("populate here")
+  if(message.percentage.substring(1, message.percentage.length - 1) > 0)
     li = li.addClass("red-background")
   else
     li = li.addClass("green-background")
@@ -62,7 +61,6 @@ updateProgressBar = (message) ->
   $('.bar').width(message.totalPercentage + "%")
 
 updateFundChange = (message) ->
-  $("#fund").empty()
   $("#fund").prepend($("<h4>").text(message.percentage))
   $('.bar').width("100%")
   $('.bar').text("Estimation complete")

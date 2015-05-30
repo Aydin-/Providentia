@@ -12,7 +12,7 @@
         <script type='text/javascript' src='@routes.Assets.at("lib/flot/jquery.flot.js")'></script>
         <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
     </head>
-    <body data-ws-url="wss://providentia-funds.herokuapp.com/ws">
+    <body data-ws-url="@routes.Application.wss.webSocketURL(request)">
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
@@ -28,9 +28,10 @@
                 </div>
             </div>
         </div>
+
         <div class="progress-container">
             <div class="progress progress-striped active">
-                <div class="bar" style="width : 0 % ;"></div>
+                <div class="bar" style="width:0%"></div>
             </div>
         </div>
 

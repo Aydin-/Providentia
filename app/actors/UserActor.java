@@ -38,6 +38,7 @@ public class UserActor extends UntypedActor {
   }
 
   public void onReceive(Object message) {
+    System.out.println("got message" +message);
     if (message instanceof StockUpdate) {
       // push the stock to the client
       StockUpdate stockUpdate = (StockUpdate) message;
