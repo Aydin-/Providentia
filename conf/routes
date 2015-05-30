@@ -3,7 +3,7 @@
 # ~~~~
 
 GET        /                         controllers.Application.index
-GET        /ws                       controllers.Application.ws
+GET        /ws                       controllers.Application.wss
 GET        /sentiment/:symbol        controllers.StockSentiment.get(symbol)
 
 # Map static resources from the /public folder to the /assets URL path

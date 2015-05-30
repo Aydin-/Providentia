@@ -3,21 +3,19 @@ package controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import actors.FundUpdate;
-import actors.ProgressBar;
-import actors.StockActor;
 import actors.StocksActor;
 import actors.UnwatchStock;
 import actors.UserActor;
 import actors.WatchStock;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-
 import play.libs.Akka;
 import play.libs.F;
 import play.libs.Json;
@@ -26,8 +24,6 @@ import play.mvc.Result;
 import play.mvc.WebSocket;
 import scala.Option;
 import utils.FundQuote;
-
-import java.util.logging.*;
 
 
 /**
@@ -42,7 +38,7 @@ public class Application extends Controller {
 
   private static Map<String, String> symbolMap = new HashMap<String, String>(); //From name to symbol
 
-  public static WebSocket<JsonNode> ws() {
+  public static WebSocket<JsonNode> wss() {
     return new WebSocket<JsonNode>() {
       public void onReady(final WebSocket.In<JsonNode> in, final WebSocket.Out<JsonNode> out) {
         // create a new UserActor and give it the default stocks to watch
