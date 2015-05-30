@@ -58,9 +58,9 @@ public class Application extends Controller {
                            log.log(Level.INFO, "Unwatching " + symbol);
                          }
                          //  symbolMap=new HashMap<String, String>();
-
+                         String symbol;
                          for (FundQuote.Holding holding : holdings) {
-                           String symbol = "";
+                           symbol = "";
                            if (symbolMap.get(holding.name) != null) {
                              symbol = symbolMap.get(holding.name);
 
@@ -96,7 +96,7 @@ public class Application extends Controller {
                            ObjectNode progressBarMessage = Json.newObject();
                            progressBarMessage.put("type", "progressbar");
                            progressBarMessage.put("totalPercentage", progress.intValue());
-                           progressBarMessage.put("progressMessage", "Getting fund holdings -  - ");
+                           progressBarMessage.put("progressMessage",("Getting fund holdings " + holding.symbol + " "));
                            out.write(progressBarMessage);
                          }
 

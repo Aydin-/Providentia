@@ -48,7 +48,12 @@ populateStockHistory = (message) ->
   flipper = $("<div>").addClass("flipper").append(chartHolder).prepend(detailsHolder).attr("data-content", message.symbol)
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
-  li=$("<li>").prepend(flipContainer)
+  li = $("<li>").prepend(flipContainer)
+
+  if(message.percentage.substring(1, message.percentage.length-1) > 0.0)
+    li = li.addClass("red-background")
+  else
+    li = li.addClass("green-background")
   $("#stocks ul").prepend(li)
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
@@ -57,7 +62,8 @@ updateProgressBar = (message) ->
   $('.bar').width(message.totalPercentage + "%")
 
 updateFundChange = (message) ->
-  $("#fund").append($("<h3>").text(message.percentage))
+  $("#fund").empty()
+  $("#fund").prepend($("<h4>").text(message.percentage))
   $('.bar').width("100%")
   $('.bar').text("Estimation complete")
   $('.progress').removeClass('active');
