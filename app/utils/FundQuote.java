@@ -46,6 +46,7 @@ public class FundQuote implements StockQuote {
 
       } catch (Exception e) {
         log.severe("Exception getting: " + holding.symbol);
+        e.printStackTrace();
       }
     }
 
@@ -126,14 +127,17 @@ public class FundQuote implements StockQuote {
 
         String[] lineValues = line.split(",");
 
-        String percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
+        String percentStr = "0";
+        if(lineValues[1]!=null) {
+          percentStr=lineValues[1].replace('\"', ' ').replace(',', '.');
+        }
 
         BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
 
         if (lineValues.length >= 5) {
           retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));
         } else {
-          retval.add(new Holding(null, lineValues[0], new BigDecimal(lineValues[1].replace('\"', ' '))));
+          retval.add(new Holding(null, lineValues[0], percentHolding));
         }
       }
       return retval;
