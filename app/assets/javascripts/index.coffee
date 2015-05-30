@@ -45,11 +45,9 @@ populateStockHistory = (message) ->
   chartHolder = $("<div>").addClass("chart-holder").append(chart)
   chartHolder.append($("<p>").text("Realtime percent change " + message.percentage))
   detailsHolder = $("<div>").addClass("details-holder")
-  flipper = $("<div>").addClass("flipper").append(chartHolder).append(detailsHolder).attr("data-content", message.symbol)
+  flipper = $("<div>").addClass("flipper").append(chartHolder).prepend(detailsHolder).attr("data-content", message.symbol)
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
-  #$("#stocks").prepend(flipContainer)
- # $("#stocks").getElementsByTagName("ul").prepend(flipContainer)
   li=$("<li>").prepend(flipContainer)
   $("#stocks ul").prepend(li)
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")

@@ -1,8 +1,10 @@
 @import url('//netdna.bootstrapcdn.com/bootstrap/2.3.2/css/bootstrap.min.css');
+
 .progress-container {
   margin-top: 50px;
   width: 100%;
 }
+
 .perspective (@value) {
   -webkit-perspective: @value;
   -moz-perspective: @value;
@@ -29,16 +31,19 @@ ul {
   column-count: 1;
   column-gap: 20px;
 }
-li{
-  background:lightgrey;
-  float:left;
-  height:200px;
-  margin:0 10px 10px 0;
-  width:500px;
+
+li {
+  background: #aaaaaa;
+  float: left;
+  height: 200px;
+  margin: 0 10px 10px 0;
+  width: 500px;
 }
+
 body {
   margin-top: 50px;
 }
+
 .footer {
   position: absolute;
   bottom: 0;
@@ -97,13 +102,13 @@ body {
   }
 }
 
-.chart-holder, .details-holder {
+.chart-holder {
   position: relative;
+  top: 0 !important;
   width: 500px;
   height: 190px;
-  top: 20px;
   left: 10px;
-
+  z-index: auto;
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -125,10 +130,12 @@ body {
   .transform(180deg);
   text-align: center;
   & h4 {
-    padding: 20px;
+    position: absolute;
+    top: 0;
+    padding: 0px;
   }
   & .progress {
-    padding: 20px;
+    padding: 0px;
     background: none;
     border: none;
 
@@ -137,8 +144,8 @@ body {
     box-shadow: none;
   }
   & img {
-    height: 128px;
-    width: 128px;
+    height: 50px;
+    width: 50px;
   }
 }
 
