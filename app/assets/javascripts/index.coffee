@@ -51,8 +51,10 @@ populateStockHistory = (message) ->
     handleFlip($(this))
   li = $("<li>").prepend(flipContainer)
 
-  if(message.percentage.substring(1, message.percentage.length-1) > 0.0)
+  if(message.percentage.substring(1, message.percentage.length - 1) < 0.0)
     li = li.addClass("red-background")
+  else if (message.percentage.substring(1, message.percentage.length - 1) == "0.00")
+    li = li.addClass("grey-background")
   else
     li = li.addClass("green-background")
   $("#stocks ul").prepend(li)
