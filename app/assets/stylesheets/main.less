@@ -22,12 +22,19 @@
 }
 
 ul {
-  -moz-column-count: 2;
+  -moz-column-count: 1;
   -moz-column-gap: 20px;
-  -webkit-column-count: 2;
+  -webkit-column-count: 1;
   -webkit-column-gap: 20px;
-  column-count: 2;
+  column-count: 1;
   column-gap: 20px;
+}
+li{
+  background:lightgrey;
+  float:left;
+  height:200px;
+  margin:0 10px 10px 0;
+  width:500px;
 }
 body {
   margin-top: 50px;
@@ -55,8 +62,8 @@ body {
 }
 
 .flipper {
-  height: 125px;
-  width: 600px;
+  height: 190px;
+  width: 500px;
 
   background-color: #fafafa;
   border: 1px solid #ddd;
@@ -91,11 +98,11 @@ body {
 }
 
 .chart-holder, .details-holder {
-  position: absolute;
-  width: 50%;
-  height: 125px;
-  top: 0px;
-  left: 0px;
+  position: relative;
+  width: 500px;
+  height: 190px;
+  top: 20px;
+  left: 10px;
 
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
@@ -105,9 +112,9 @@ body {
 .chart-holder {
   z-index: 2;
   & p {
-    position: absolute;
-    bottom: 7px;
-    right: 20px;
+    position: relative;
+    bottom: 20px;
+    left: 20px;
     font-size: 10px;
     color: #aaaaaa;
     font-style: italic;

@@ -15,7 +15,6 @@ $ ->
         console.log(message)
 
   $("#addsymbolform").submit (event) ->
-    $("#stocks").empty()
     event.preventDefault()
     # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
@@ -49,7 +48,10 @@ populateStockHistory = (message) ->
   flipper = $("<div>").addClass("flipper").append(chartHolder).append(detailsHolder).attr("data-content", message.symbol)
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
-  $("#stocks").prepend(flipContainer)
+  #$("#stocks").prepend(flipContainer)
+ # $("#stocks").getElementsByTagName("ul").prepend(flipContainer)
+  li=$("<li>").prepend(flipContainer)
+  $("#stocks ul").prepend(li)
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
 updateProgressBar = (message) ->
@@ -108,7 +110,7 @@ handleFlip = (container) ->
       error: (jqXHR, textStatus, error) ->
         detailsHolder = $(this).find(".details-holder")
         detailsHolder.empty()
-        detailsHolder.append($("<h2>").text("Error: " + JSON.parse(jqXHR.responseText).error))
+        detailsHolder.append($("<h4>").text("Error: " + JSON.parse(jqXHR.responseText).error))
     # display loading info
     detailsHolder = container.find(".details-holder")
     detailsHolder.append($("<h4>").text("Determing whether you should buy or sell based on the sentiment of recent tweets..."))
