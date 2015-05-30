@@ -16,6 +16,7 @@ $ ->
 
   $("#addsymbolform").submit (event) ->
     event.preventDefault()
+    $("#stocks ul").empty()
     # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
 
