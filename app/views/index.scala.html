@@ -12,6 +12,7 @@
         <script type='text/javascript' src='@routes.Assets.at("lib/flot/jquery.flot.js")'></script>
         <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
     </head>
+    <!-- wss://providentia-funds.herokuapp.com/ws -->
     <body data-ws-url="wss://providentia-funds.herokuapp.com/ws">
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-inner">
@@ -25,7 +26,7 @@
                             <option value="DNBAsiaSmallCap">DNB Asia Small Cap</option>
                             <option value="DNBGreenNorden">DNB Grønt Norden</option>
                             <option value="DNBIndia">DNB India</option>
-                            <option value="DNBJapan">DNB Japany</option>
+                            <option value="DNBJapan">DNB Japan</option>
                             <option value="DNBUSA">DNB USA</option>
                             <option value="DNBChinaCentury">DNB China Century</option>
                             <option value="DNBNavigator">DNB Navigator</option>
@@ -38,13 +39,13 @@
         </div>
         <div class="progress-container">
             <div class="progress progress-striped active">
-                <div class="bar" style="width : 0 % ;"></div>
+                <div class="bar" style="width : 0% ;"></div>
             </div>
         </div>
 
-        <div id="fund" class="fundContainer"></div>
-        <div id="mainContainer">
 
+        <div id="mainContainer">
+            <div id="fund" class="fundContainer"></div>
             <div id="stocks" class="container">
                 <ul></ul>
             </div>
