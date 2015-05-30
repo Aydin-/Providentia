@@ -1,6 +1,6 @@
 import play.PlayScala
 
-name := """proventia"""
+name := """providentia"""
 
 version := "1.0-SNAPSHOT"
 
