@@ -15,6 +15,7 @@ $ ->
         console.log(message)
 
   $("#addsymbolform").submit (event) ->
+    $("#stocks").empty()
     event.preventDefault()
     # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
@@ -52,7 +53,7 @@ populateStockHistory = (message) ->
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
 updateProgressBar = (message) ->
-  $('.bar').text(message.progressMessage + " " +message.totalPercentage+ "%");
+  $('.bar').text(message.progressMessage + " " + message.totalPercentage + "%");
   $('.bar').width(message.totalPercentage + "%")
 
 updateFundChange = (message) ->
