@@ -12,7 +12,7 @@
         <script type='text/javascript' src='@routes.Assets.at("lib/flot/jquery.flot.js")'></script>
         <script type='text/javascript' src='@routes.Assets.at("javascripts/index.js")'></script>
     </head>
-    <!-- wss://providentia-funds.herokuapp.com/ws -->
+    
     <body data-ws-url="wss://providentia-funds.herokuapp.com/ws">
         <div class="navbar navbar-inverse navbar-fixed-top">
             <div class="navbar-inner">
@@ -49,11 +49,15 @@
             <div id="stocks" class="container">
                 <ul></ul>
             </div>
-                <div class="footer">
-                    <p class="text-muted">An Aydin Gungordu concoction - <a class="" href="mailto:aydinbg&amp;gmail.com?Subject=Providentia">Contact</a>
-                        - <a class="" href="http://no.linkedin.com/in/AydinGungordu">LinkedIn</a></p>
-                </div>
 
+            <div class="sidebar">
+
+                <p class="text-muted"><div id="skipped" ></div>
+            </div>
+            <div class="footer">
+                <p class="text-muted">An Aydin Gungordu concoction - <a class="" href="mailto:aydinbg&amp;gmail.com?Subject=Providentia">Contact</a>
+                    - <a class="" href="http://no.linkedin.com/in/AydinGungordu">LinkedIn</a> - <a class="" href="https://github.com/Aydin-">GitHub</a></p>
+            </div>
             </div>
     </body>
 </html>

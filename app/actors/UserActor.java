@@ -25,15 +25,7 @@ public class UserActor extends UntypedActor {
 
   public UserActor(WebSocket.Out<JsonNode> out) {
     this.out = out;
-
-    // watch the default stocks
-    List<String> defaultStocks = Play.application().configuration().getStringList("default.stocks");
-
-    for (String stockSymbol : defaultStocks) {
-      StocksActor.stocksActor().tell(new WatchStock(stockSymbol), getSelf());
-    }
   }
-
 
   public void onReceive(Object message) {
     if (message instanceof StockUpdate) {
@@ -46,7 +38,7 @@ public class UserActor extends UntypedActor {
       stockUpdateMessage.put("percentage", stockUpdate.percentage());
       out.write(stockUpdateMessage);
     } else if (message instanceof FundUpdate) {
-      // push the stock to the client
+
       FundUpdate fundUpdate = (FundUpdate) message;
       ObjectNode fundUpdateMessage = Json.newObject();
       fundUpdateMessage.put("type", "fundupdate");
@@ -54,7 +46,7 @@ public class UserActor extends UntypedActor {
 
       out.write(fundUpdateMessage);
     } else if (message instanceof StockHistory) {
-      // push the history to the client
+
       StockHistory stockHistory = (StockHistory) message;
 
       ObjectNode stockUpdateMessage = Json.newObject();
@@ -75,6 +67,13 @@ public class UserActor extends UntypedActor {
       progressBarMessage.put("totalPercentage", progressBar.percentChange());
       progressBarMessage.put("progressMessage", "Estimating value change..");
       out.write(progressBarMessage);
+
+    }else if (message instanceof SkippedStocks) {
+      SkippedStocks skippedStocks = (SkippedStocks) message;
+      ObjectNode skippedStocksMessage = Json.newObject();
+      skippedStocksMessage.put("type", "skippedstocks");
+      skippedStocksMessage.put("name", skippedStocks.name());
+      out.write(skippedStocksMessage);
 
     }
   }

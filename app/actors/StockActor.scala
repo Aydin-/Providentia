@@ -11,8 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 /**
- * There is one StockActor per stock symbol.  The StockActor maintains a list of users watching the stock and the stock
- * values.  Each StockActor updates a rolling dataset of stock values.
+ *
  */
 
 class StockActor(symbol: String) extends Actor {
@@ -22,14 +21,12 @@ class StockActor(symbol: String) extends Actor {
   protected[this] var watchers: HashSet[ActorRef] = HashSet.empty[ActorRef]
   protected[this] var changeMap:mutable.HashMap[String, String]= new mutable.HashMap[String, String]
 
-  // A random data set which uses stockQuote.newPrice to get each data point
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
     initialPrices.take(15).to[Queue]
   }
-  
-  // Fetch the latest stock value every
-  val stockTick = context.system.scheduler.schedule(Duration.Zero, 15000.millis, self, FetchLatest)
+
+  val stockTick = context.system.scheduler.schedule(Duration.Zero, 5000.millis, self, FetchLatest)
 
   def receive = {
     case FetchLatest =>
@@ -86,6 +83,8 @@ case class StockUpdate(symbol: String, price: Number, percentage: String)
 case class StockHistory(symbol: String, history: java.util.List[java.lang.Double], percentage: String)
 
 case class ProgressBar(percentChange: Integer)
+
+case class SkippedStocks(name: String)
 
 case class WatchStock(symbol: String)
 

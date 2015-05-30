@@ -11,12 +11,15 @@ $ ->
         updateFundChange(message)
       when "progressbar"
         updateProgressBar(message)
+      when "skippedstocks"
+        updateSkippedStocks(message)
       else
         console.log(message)
 
   $("#addsymbolform").submit (event) ->
     event.preventDefault()
     $("#stocks ul").empty()
+    $("#skipped").empty()
     # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
 
@@ -63,6 +66,9 @@ populateStockHistory = (message) ->
 updateProgressBar = (message) ->
   $('.bar').text(message.progressMessage + " " + message.totalPercentage + "%");
   $('.bar').width(message.totalPercentage + "%")
+
+updateSkippedStocks = (message) ->
+  $("#skipped").append($("<p>").addClass("text-muted").text(message.name))
 
 updateFundChange = (message) ->
   $("#fund").empty()

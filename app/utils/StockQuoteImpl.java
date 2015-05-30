@@ -41,28 +41,15 @@ public class StockQuoteImpl implements StockQuote {
 
   @Override
   public String newPercentage(String symbol) {
-    StockPage stockPage;
-    try {
-      stockPage = parseStock(symbol);
-
-      if (stockPage.query.results.quote.ChangePercentRealtime != null) {
-        percentageCache.put(symbol, stockPage.query.results.quote.ChangePercentRealtime);
-        return stockPage.query.results.quote.ChangePercentRealtime;
-      } else if (stockPage.query.results.quote.PercentChange != null) {
-        percentageCache.put(symbol, stockPage.query.results.quote.PercentChange);
-        return stockPage.query.results.quote.PercentChange;
-      }
-
-    } catch (Exception e) {
-      log.log(Level.WARNING, "--------- Cannot get stockPage for symbol:" + symbol + e.getClass());
-    }
+    log.log(Level.SEVERE, "Wrong method");
     return "-9.999";
   }
 
   public static String newPercentageStatic(String symbol) {
     try {
-      if(percentageCache.containsKey(symbol))
-        return percentageCache.get(symbol);
+      if (percentageCache.containsKey(symbol)) {
+        return percentageCache.remove(symbol);
+      }
 
       StockPage stockPage;
       stockPage = new StockQuoteImpl().parseStock(symbol);
@@ -73,6 +60,9 @@ public class StockQuoteImpl implements StockQuote {
       } else if (stockPage.query.results.quote.PercentChange != null) {
         percentageCache.put(symbol, stockPage.query.results.quote.PercentChange);
         return stockPage.query.results.quote.PercentChange;
+      } else {
+        percentageCache.put(symbol, stockPage.query.results.quote.ChangeinPercent);
+        return stockPage.query.results.quote.ChangeinPercent;
       }
 
     } catch (Exception e) {
@@ -109,7 +99,6 @@ public class StockQuoteImpl implements StockQuote {
   }
 
   public StockPage parseStock(String stock) throws Exception {
-    //log.info("Parsing "+stock);
     String json = readUrl(getURL(stock.trim()), 1);
     Gson gson = new Gson();
     return gson.fromJson(json, StockPage.class);
@@ -187,6 +176,7 @@ public class StockQuoteImpl implements StockQuote {
     String LastTradePriceOnly;
     String ChangePercentRealtime;
     String DaysValueChange;
+    String ChangeinPercent;
     String open;
     String PercentChange;
 
