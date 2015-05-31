@@ -28,7 +28,7 @@ import utils.FundQuote;
  * The main web controller that handles returning the index page, setting up a WebSocket, and watching a fund.
  */
 public class Application extends Controller {
- // static Logger log = Logger.getGlobal();
+  static Logger log = Logger.getGlobal();
 
   public static Result index() {
     return ok(views.html.index.render());
@@ -102,10 +102,10 @@ public class Application extends Controller {
 
         );
 
-                       for (String symbol : symbolMap.values()) {
-                         StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
-                  //       log.log(Level.INFO, "Unwatching " + symbol);
-                       }
+        for (String symbol : symbolMap.values()) {
+          StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
+          //       log.log(Level.INFO, "Unwatching " + symbol);
+        }
         in.onClose(() -> {
             for (String symbol : symbolMap.values()) {
               StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
