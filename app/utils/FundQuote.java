@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import actors.ProgressBar;
+import actors.SkippedStocks;
 import actors.StocksActor;
 import akka.actor.ActorRef;
 
@@ -23,14 +24,12 @@ public class FundQuote implements StockQuote {
   public static String getFundChange(List<Holding> holdings, ActorRef actor) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
     BigDecimal totalPercentage = new BigDecimal("0.0");
-System.out.println("got here");
-    StockQuoteImpl rsq = new StockQuoteImpl();
+    String skipped = null;
+
     for (Holding holding : holdings) {
       try {
-        if (holding.symbol != null) {
-          StockQuoteImpl.StockPage stockPage = rsq.parseStock(holding.symbol.trim());
-
-          String changeToday = stockPage.query.results.quote.PercentChange.replace('+', ' ');
+        if (holding != null && holding.symbol != null) {
+          String changeToday = "" + StockQuoteImpl.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
           log.info(holding + " Total: " + totalPercentage);
@@ -40,40 +39,56 @@ System.out.println("got here");
 
           totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
           ProgressBar pb = new ProgressBar(totalPercentage.intValue());
-
           actor.tell(pb, StocksActor.stocksActor());
+        } else {
+          if (holding != null) {
+            if(skipped == null){
+              skipped = "Skipped: -" + (holding.name);
+            } else {
+              skipped = "-" + (holding.name);
+            }
+          }
+
+          if(skipped!=null){
+            SkippedStocks skippedStocks = new SkippedStocks(skipped);
+            actor.tell(skippedStocks, StocksActor.stocksActor());
+          }
+
         }
 
       } catch (Exception e) {
-        log.severe("Exception getting: " + holding.symbol);
+        if (holding != null)
+          log.severe("Exception getting: " + holding.name+ " "+holding.percentage);
         e.printStackTrace();
       }
     }
 
-    return "fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
+    return " fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
   }
 
-  private static String getURL(String name) {
-    String url;
+  public static String trimHoldingName(String name) {
+    name = name.toLowerCase();
+    if (name.startsWith("as "))
+      name = name.substring(2);
+    if (name.endsWith(" as"))
+      name = name.substring(0, name.length() - 3);
 
-    url = "https://query.yahooapis.com/v1/public/yql?q=";
-    url += URLEncoder.encode("select * from yahoo.finance.quotes ");
-    url += URLEncoder.encode("where symbol in ('" + name + "')");
-    url += "&format=json&diagnostics=true";
-    url += "&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-    return url;
+    name = name.replace("asa/the", "");
+    name = name.replace(" asa", "");
+    name = name.replace(" as ", " ");
+    name = name.replace(" ltd", "");
+    name = name.replace(" inc", "");
+    name = name.replace("the ", " ");
+    name = name.replace("-", " ");
+    name = name.replace("_", " ");
+    name = name.replace(" co ", " ");
+    name = name.replace("2012", " ");
+    name = name.trim();
+    return name;
   }
 
   public static String getStockSymbol(String name) {
-
-    name = name.replace("ASA", "");
-    name = name.replace("Asa", "");
-    name = name.replace("LTD", "");
-    name = name.replace("Ltd", "");
-    name = name.replace("Inc", "");
-    name = name.replace("INC", "");
-    name = name.replace("The", "");
-    name = name.trim();
+    name = trimHoldingName(name);
     if (name.length() > 15)
       name = name.substring(0, 15);
 
@@ -85,6 +100,9 @@ System.out.println("got here");
     } catch (Exception e) {
       e.printStackTrace();
     }
+    if (json == null)
+      return "";
+
     int test = json.indexOf("symbol");
     //System.out.println(json);
     if (test != -1)
@@ -128,16 +146,18 @@ System.out.println("got here");
         String[] lineValues = line.split(",");
 
         String percentStr = "0";
-        if(lineValues[1]!=null) {
-          percentStr=lineValues[1].replace('\"', ' ').replace(',', '.');
-        }
+        if (lineValues.length > 1) {
+          if (lineValues[1] != null) {
+            percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
+          }
 
-        BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
+          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
 
-        if (lineValues.length >= 5) {
-          retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));
-        } else {
-          retval.add(new Holding(null, lineValues[0], percentHolding));
+          if (lineValues.length >= 5) {
+            retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));
+          } else {
+            retval.add(new Holding(null, lineValues[0], percentHolding));
+          }
         }
       }
       return retval;

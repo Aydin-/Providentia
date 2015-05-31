@@ -6,12 +6,12 @@ import utils.{StockQuoteImpl, StockQuote}
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashSet, Queue}
+import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 /**
- * There is one StockActor per stock symbol.  The StockActor maintains a list of users watching the stock and the stock
- * values.  Each StockActor updates a rolling dataset of stock values.
+ *
  */
 
 class StockActor(symbol: String) extends Actor {
@@ -19,26 +19,25 @@ class StockActor(symbol: String) extends Actor {
   lazy val stockQuote: StockQuote = new StockQuoteImpl
   
   protected[this] var watchers: HashSet[ActorRef] = HashSet.empty[ActorRef]
+  protected[this] var changeMap:mutable.HashMap[String, String]= new mutable.HashMap[String, String]
 
-  // A random data set which uses stockQuote.newPrice to get each data point
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
-    initialPrices.take(5).to[Queue]
+    initialPrices.take(15).to[Queue]
   }
-  
-  // Fetch the latest stock value every 10000ms TODO:
-  val stockTick = context.system.scheduler.schedule(Duration.Zero, 2500.millis, self, FetchLatest)
+
+  val stockTick = context.system.scheduler.schedule(Duration.Zero, 5000.millis, self, FetchLatest)
 
   def receive = {
     case FetchLatest =>
       // add a new stock price to the history and drop the oldest
       val newPrice = stockQuote.newPrice(symbol)
-      stockHistory = stockHistory.drop(1) :+ newPrice
+      stockHistory = stockHistory :+ newPrice
       // notify watchers
-      watchers.foreach(_ ! StockUpdate(symbol, newPrice, stockQuote.newPercentage(symbol)))
+      watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuoteImpl.newPercentageStatic(symbol)))
     case WatchStock(_) =>
       // send the stock history to the user
-      sender ! StockHistory(symbol, stockHistory.asJava, stockQuote.newPercentage(symbol))
+      sender ! StockHistory(symbol, stockHistory.asJava, StockQuoteImpl.newPercentageStatic(symbol))
       // add the watcher to the list
       watchers = watchers + sender
     case UnwatchStock(_) =>
@@ -83,7 +82,9 @@ case class StockUpdate(symbol: String, price: Number, percentage: String)
 
 case class StockHistory(symbol: String, history: java.util.List[java.lang.Double], percentage: String)
 
-case class ProgressBar(percentChange: Integer);
+case class ProgressBar(percentChange: Integer)
+
+case class SkippedStocks(name: String)
 
 case class WatchStock(symbol: String)
 

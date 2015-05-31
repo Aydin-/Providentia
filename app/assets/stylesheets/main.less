@@ -43,6 +43,9 @@ li {
 body {
   margin-top: 50px;
 }
+.grey-background{
+  background: #aaaaaa;
+}
 
 .red-background {
   background: #FFCCCC;
@@ -60,6 +63,17 @@ body {
   text-align: right;
   height: 30px;
   background: #f5f5f5;
+}
+
+.sidebar {
+  position: fixed;
+  top: 70px;
+  right: 0px;
+  text-align: right;
+  width: 150px;
+  height: 400px;
+  background: #f5f5f5;
+  overflow:scroll;
 }
 
 .mainContainer {
@@ -142,11 +156,11 @@ body {
   text-align: center;
   & h4 {
     position: absolute;
-    top: 0;
+    top: 10px;
     padding: 0px;
   }
   & .progress {
-    padding: 0px;
+    padding: 1px;
     background: none;
     border: none;
 

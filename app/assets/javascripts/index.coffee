@@ -11,11 +11,16 @@ $ ->
         updateFundChange(message)
       when "progressbar"
         updateProgressBar(message)
+      when "skippedstocks"
+        updateSkippedStocks(message)
       else
         console.log(message)
 
   $("#addsymbolform").submit (event) ->
     event.preventDefault()
+    $("#stocks ul").empty()
+    $("#skipped").empty()
+    # send the message to watch the stock
     ws.send(JSON.stringify({symbol: $("#addsymboltext").val()}))
 
 getPricesFromArray = (data) ->
@@ -48,17 +53,22 @@ populateStockHistory = (message) ->
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
   li = $("<li>").prepend(flipContainer)
-  alert("populate here")
-  if(message.percentage.substring(1, message.percentage.length - 1) > 0)
-    li = li.addClass("red-background")
-  else
-    li = li.addClass("green-background")
+  if(message.percentage != null)
+    if(message.percentage.substring(0, 1) == "-")
+      li = li.addClass("red-background")
+    else if (message.percentage.substring(1, message.percentage.length - 1) == "0.00")
+      li = li.addClass("grey-background")
+    else
+      li = li.addClass("green-background")
   $("#stocks ul").prepend(li)
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
 updateProgressBar = (message) ->
   $('.bar').text(message.progressMessage + " " + message.totalPercentage + "%");
   $('.bar').width(message.totalPercentage + "%")
+
+updateSkippedStocks = (message) ->
+  $("#skipped").append($("<p>").addClass("text-muted").text(message.name))
 
 updateFundChange = (message) ->
   $("#fund").prepend($("<h4>").text(message.percentage))
