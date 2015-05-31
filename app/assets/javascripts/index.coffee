@@ -53,13 +53,13 @@ populateStockHistory = (message) ->
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
   li = $("<li>").prepend(flipContainer)
-
-  if(message.percentage.substring(0, 1) == "-")
-    li = li.addClass("red-background")
-  else if (message.percentage.substring(1, message.percentage.length - 1) == "0.00")
-    li = li.addClass("grey-background")
-  else
-    li = li.addClass("green-background")
+  if(message.percentage != null)
+    if(message.percentage.substring(0, 1) == "-")
+      li = li.addClass("red-background")
+    else if (message.percentage.substring(1, message.percentage.length - 1) == "0.00")
+      li = li.addClass("grey-background")
+    else
+      li = li.addClass("green-background")
   $("#stocks ul").prepend(li)
   plot = chart.plot([getChartArray(message.history)], getChartOptions(message.history)).data("plot")
 
