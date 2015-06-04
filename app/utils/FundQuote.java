@@ -17,7 +17,7 @@ import actors.SkippedStocks;
 import actors.StocksActor;
 import akka.actor.ActorRef;
 
-public class FundQuote implements StockQuote {
+public class FundQuote {
 
   static Logger log = Logger.getGlobal();
 
@@ -29,7 +29,7 @@ public class FundQuote implements StockQuote {
     for (Holding holding : holdings) {
       try {
         if (holding != null && holding.symbol != null) {
-          String changeToday = "" + StockQuoteImpl.newPercentageStatic(holding.symbol.trim());
+          String changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
           log.info(holding + " Total: " + totalPercentage);
@@ -42,14 +42,14 @@ public class FundQuote implements StockQuote {
           actor.tell(pb, StocksActor.stocksActor());
         } else {
           if (holding != null) {
-            if(skipped == null){
+            if (skipped == null) {
               skipped = "Skipped: -" + (holding.name);
             } else {
               skipped = "-" + (holding.name);
             }
           }
 
-          if(skipped!=null){
+          if (skipped != null) {
             SkippedStocks skippedStocks = new SkippedStocks(skipped);
             actor.tell(skippedStocks, StocksActor.stocksActor());
           }
@@ -58,7 +58,7 @@ public class FundQuote implements StockQuote {
 
       } catch (Exception e) {
         if (holding != null)
-          log.severe("Exception getting: " + holding.name+ " "+holding.percentage);
+          log.severe("Exception getting: " + holding.name + " " + holding.percentage);
         e.printStackTrace();
       }
     }
@@ -174,17 +174,6 @@ public class FundQuote implements StockQuote {
     }
     return retval;
   }
-
-  @Override
-  public Double newPrice(String symbol) throws IOException {
-    return -1.0;
-  }
-
-  @Override
-  public String newPercentage(String symbol) {
-    return null;
-  }
-
 
   public static class Holding {
     public String name;
