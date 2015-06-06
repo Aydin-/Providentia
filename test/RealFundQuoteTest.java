@@ -13,28 +13,30 @@ import utils.FundQuote;
 public class RealFundQuoteTest {
 
   @Before
-  public void startApplication(){
+  public void startApplication() {
     FakeApplication fakeApp = fakeApplication();
   }
 
   @Test
   public void testGetHoldings() throws IOException {
-    assertNotNull(FundQuote.getFundHoldings("DNBNorgeIndex"));
+    assertNotNull(FundQuote.getFundHoldings("AydinTest"));
   }
 
   @Test
   public void testGetFundChange() throws IOException {
-    assertNotNull(FundQuote.getFundChange(FundQuote.getFundHoldings("DNBNorgeIndex"), null, "DNBGlobalIndex"));
+    String testStr = FundQuote.getFundChange(FundQuote.getFundHoldings("AydinTest"), null, "AydinTest");
+    assertNotNull(testStr);
+    System.out.println("------ " + testStr);
   }
 
   @Test
   public void testCurrencies() throws IOException {
-    assertNotNull(FundQuote.getCurrencyHoldings("DNBGlobalIndex"));
+    assertNotNull(FundQuote.getCurrencyHoldings("AydinTest"));
   }
 
   @Test
   public void testApplyCurrencies() throws IOException {
-    assertNotNull(FundQuote.applyCurrencies("DNBGlobalIndex", new BigDecimal("1"),null));
+    assertNotNull(FundQuote.applyCurrencies("AydinTest", new BigDecimal("1"), null));
   }
 
 }

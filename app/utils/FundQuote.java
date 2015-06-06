@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
+import com.typesafe.config.ConfigFactory;
 
 import actors.ProgressBar;
 import actors.SkippedStocks;
@@ -28,6 +29,7 @@ public class FundQuote {
 
   static Logger log = Logger.getGlobal();
 
+   private static final String testPath = ConfigFactory.load().getString("testpath");
   private static final String path = "public/csv/";
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor, String fundName) {
@@ -86,7 +88,7 @@ public class FundQuote {
     if (name.endsWith(" as"))
       name = name.substring(0, name.length() - 3);
 
-    String[] stopWords = {"asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012"};
+    String[] stopWords = {"asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012", "company"};
 
     for (String word : stopWords) {
       name = name.replace(word, " ");
@@ -142,7 +144,7 @@ public class FundQuote {
 
 
   public static List<Holding> getFundHoldings(String fund) {
-    String csvFile = path + fund + ".csv";
+    String csvFile = "/Users/aydin.gungordu/proventia/public/csv/" + fund + ".csv";
     BufferedReader br = null;
     String line;
     List<Holding> retval = new ArrayList<>();
@@ -184,7 +186,7 @@ public class FundQuote {
   }
 
   public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
-    String csvFile = path + fund + "_Currency.csv";
+    String csvFile = "/Users/aydin.gungordu/proventia/public/csv/" + fund + "_Currency.csv";
     BufferedReader br = null;
     String line;
     Map<String, BigDecimal> retval = new HashMap<>();
