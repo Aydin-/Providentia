@@ -7,12 +7,17 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
+
+import com.google.gson.Gson;
 
 import actors.ProgressBar;
 import actors.SkippedStocks;
@@ -22,6 +27,8 @@ import akka.actor.ActorRef;
 public class FundQuote {
 
   static Logger log = Logger.getGlobal();
+
+  private static final String path = "/Users/aydin.gungordu/proventia/public/csv/";
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
@@ -40,8 +47,11 @@ public class FundQuote {
           totalWeightedChange = totalWeightedChange.add(weightedChange);
 
           totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
+
           ProgressBar pb = new ProgressBar(totalPercentage.intValue());
-          actor.tell(pb, StocksActor.stocksActor());
+          if (actor != null) {
+            actor.tell(pb, StocksActor.stocksActor());
+          }
         } else {
           if (holding != null) {
             if (skipped == null) {
@@ -51,7 +61,7 @@ public class FundQuote {
             }
           }
 
-          if (skipped != null) {
+          if (skipped != null && actor != null) {
             SkippedStocks skippedStocks = new SkippedStocks(skipped);
             actor.tell(skippedStocks, StocksActor.stocksActor());
           }
@@ -64,6 +74,7 @@ public class FundQuote {
         e.printStackTrace();
       }
     }
+    totalWeightedChange = applyCurrencies("DNBGlobalIndex", totalWeightedChange);
 
     return " fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
   }
@@ -75,16 +86,11 @@ public class FundQuote {
     if (name.endsWith(" as"))
       name = name.substring(0, name.length() - 3);
 
-    name = name.replace("asa/the", "");
-    name = name.replace(" asa", "");
-    name = name.replace(" as ", " ");
-    name = name.replace(" ltd", "");
-    name = name.replace(" inc", "");
-    name = name.replace("the ", " ");
-    name = name.replace("-", " ");
-    name = name.replace("_", " ");
-    name = name.replace(" co ", " ");
-    name = name.replace("2012", " ");
+    String[] stopWords = {"asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012"};
+
+    for (String word : stopWords) {
+      name = name.replace(word, " ");
+    }
     name = name.trim();
     return name;
   }
@@ -106,7 +112,7 @@ public class FundQuote {
       return "";
 
     int test = json.indexOf("symbol");
-    //System.out.println(json);
+
     if (test != -1)
       return json.substring(test + 9, json.indexOf(',', test + 9)).replace('\"', ' ').trim();
     else
@@ -136,7 +142,7 @@ public class FundQuote {
 
 
   public static List<Holding> getFundHoldings(String fund) {
-    String csvFile = "public/csv/" + fund + ".csv";
+    String csvFile = path + fund + ".csv";
     BufferedReader br = null;
     String line;
     List<Holding> retval = new ArrayList<>();
@@ -178,7 +184,7 @@ public class FundQuote {
   }
 
   public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
-    String csvFile = "public/csv/" + fund + "_Currency.csv";
+    String csvFile = path + fund + "_Currency.csv";
     BufferedReader br = null;
     String line;
     Map<String, BigDecimal> retval = new HashMap<>();
@@ -216,23 +222,68 @@ public class FundQuote {
     return retval;
   }
 
-  private static BigDecimal applyCurrencies(String fundName, BigDecimal percentChange) {
+  public static BigDecimal applyCurrencies(String fundName, BigDecimal percentChange) {
     Map<String, BigDecimal> currencyMap = getCurrencyHoldings(fundName);
 
-    for (String currency : currencyMap.keySet()) {
-      String currencyQuery = "select * from yahoo.finance.xchange where pair in (\"NOK" + currency + "\")";
-      String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(currencyQuery) + "&region=US&lang=en-US" +
-        ".callbacks&rnd=7780152812483450";
-      try {
-        System.out.println(readUrl(url));
+    Calendar cal = Calendar.getInstance();
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    cal.add(Calendar.DATE, -1);
 
-       // ProgressBar pb = new ProgressBar(totalPercentage.intValue());
-       // actor.tell(pb, StocksActor.stocksActor());
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    BigDecimal usdChange = new BigDecimal("1.0");
+    CurrencyPage yesterdayPage = new CurrencyPage(), todayPage = new CurrencyPage();
+    try {
+
+      String ratesYesterdayURL = "https://openexchangerates.org/api/historical/" + dateFormat.format(cal.getTime()) +
+        ".json?app_id=90abee42f3444757a1cd0fead7febc96";
+      String ratesLatestURL = "https://openexchangerates.org/api/latest.json?app_id=90abee42f3444757a1cd0fead7febc96";
+
+      String yesterdayJson = readUrl(ratesYesterdayURL);
+      String todayJson = readUrl(ratesLatestURL);
+
+      yesterdayPage = parseCurrencyPage(yesterdayJson);
+      todayPage = parseCurrencyPage(todayJson);
+
+      BigDecimal usdToNok = todayPage.rates.get("NOK");
+      BigDecimal usdToNokYesterday = yesterdayPage.rates.get("NOK");
+
+      usdChange = usdToNok.divide(usdToNokYesterday, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100.0")).subtract(new BigDecimal("100.0"));
+
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    return new BigDecimal("0");
+
+    Map<String, BigDecimal> todayMap = new HashMap<String, BigDecimal>();
+    Map<String, BigDecimal> yesterdayMap = new HashMap<String, BigDecimal>();
+    Map<String, BigDecimal> changeMap = new HashMap<String, BigDecimal>();
+
+    for (String currency : currencyMap.keySet()) {
+      BigDecimal todayPrice = todayPage.rates.get(currency);
+      BigDecimal yesterdayPrice = yesterdayPage.rates.get(currency);
+
+      todayMap.put(currency, todayPrice);
+
+      if (todayPrice == null)
+        throw new NullPointerException("today price null" + currency);
+      if (yesterdayPrice == null)
+        throw new NullPointerException("yesterday price null");
+      if (usdChange == null)
+        throw new NullPointerException("usdchange price null");
+      BigDecimal changeVsNok = usdChange.add(todayPrice.divide(yesterdayPrice.multiply(new BigDecimal("100.00000001")).subtract(new BigDecimal("100.0")), 9, BigDecimal.ROUND_HALF_UP));
+
+    }
+
+
+    //openexchangerates.org/api/historical/2015-06-04.json?app_id=90abee42f3444757a1cd0fead7febc96
+
+    //   ProgressBar pb = new ProgressBar(totalPercentage.intValue());
+    //   actor.tell(pb, StocksActor.stocksActor());
+
+    //  String currencyQuery = "select * from yahoo.finance.xchange where pair in (\"NOK" + currency + "\")";
+    // String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(currencyQuery) + "&region=US&lang=en-US" +
+    // ".callbacks&rnd=7780152812483450";
+
+
+    return new BigDecimal("1").multiply(percentChange);
   }
 
   static class Resource {
@@ -247,6 +298,19 @@ public class FundQuote {
     String ask;
   }
 
+  public static CurrencyPage parseCurrencyPage(String json) throws Exception {
+    Gson gson = new Gson();
+    return gson.fromJson(json, CurrencyPage.class);
+  }
+
+  public static class CurrencyPage {
+    Map<String, BigDecimal> rates;
+  }
+
+  public static class Rates {
+    String currency;
+    BigDecimal rate;
+  }
 
   public static class Holding {
     public String name;
