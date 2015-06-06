@@ -28,7 +28,7 @@ public class FundQuote {
 
   static Logger log = Logger.getGlobal();
 
-  private static final String path = "/public/csv/";
+  private static final String path = "public/csv/";
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor, String fundName) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
@@ -250,6 +250,7 @@ public class FundQuote {
 
     } catch (Exception e) {
       e.printStackTrace();
+      return percentChange;
     }
 
     Map<String, BigDecimal> todayMap = new HashMap<String, BigDecimal>();
@@ -298,7 +299,7 @@ public class FundQuote {
     if (actor != null)
       actor.tell(pb, StocksActor.stocksActor());
 
-    totalWeightedChange.add(new BigDecimal("1.0"));
+    totalWeightedChange = totalWeightedChange.add(new BigDecimal("1.0"));
 
     return totalWeightedChange.multiply(percentChange);
   }
