@@ -144,7 +144,7 @@ public class FundQuote {
 
 
   public static List<Holding> getFundHoldings(String fund) {
-    String csvFile = "/Users/aydin.gungordu/proventia/public/csv/" + fund + ".csv";
+    String csvFile = path + fund + ".csv";
     BufferedReader br = null;
     String line;
     List<Holding> retval = new ArrayList<>();
@@ -186,7 +186,7 @@ public class FundQuote {
   }
 
   public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
-    String csvFile = "/Users/aydin.gungordu/proventia/public/csv/" + fund + "_Currency.csv";
+    String csvFile = path + fund + "_Currency.csv";
     BufferedReader br = null;
     String line;
     Map<String, BigDecimal> retval = new HashMap<>();
