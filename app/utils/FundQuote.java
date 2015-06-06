@@ -9,7 +9,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import actors.ProgressBar;
@@ -133,7 +135,7 @@ public class FundQuote {
   }
 
 
-  public List<Holding> getFundHoldings(String fund) {
+  public static List<Holding> getFundHoldings(String fund) {
     String csvFile = "public/csv/" + fund + ".csv";
     BufferedReader br = null;
     String line;
@@ -175,6 +177,77 @@ public class FundQuote {
     return retval;
   }
 
+  public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
+    String csvFile = "public/csv/" + fund + "_Currency.csv";
+    BufferedReader br = null;
+    String line;
+    Map<String, BigDecimal> retval = new HashMap<>();
+    try {
+
+      br = new BufferedReader(new FileReader(csvFile));
+      while ((line = br.readLine()) != null) {
+
+        String[] lineValues = line.split(",");
+
+        String percentStr = "0";
+        if (lineValues.length > 1) {
+          if (lineValues[1] != null) {
+            percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
+          }
+
+          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
+          String currency = lineValues[0];
+
+          retval.put(currency, percentHolding);
+        }
+      }
+      return retval;
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (br != null) {
+        try {
+          br.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return retval;
+  }
+
+  private static BigDecimal applyCurrencies(String fundName, BigDecimal percentChange) {
+    Map<String, BigDecimal> currencyMap = getCurrencyHoldings(fundName);
+
+    for (String currency : currencyMap.keySet()) {
+      String currencyQuery = "select * from yahoo.finance.xchange where pair in (\"NOK" + currency + "\")";
+      String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(currencyQuery) + "&region=US&lang=en-US" +
+        ".callbacks&rnd=7780152812483450";
+      try {
+        System.out.println(readUrl(url));
+
+       // ProgressBar pb = new ProgressBar(totalPercentage.intValue());
+       // actor.tell(pb, StocksActor.stocksActor());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return new BigDecimal("0");
+  }
+
+  static class Resource {
+    MyResource resource;
+
+  }
+
+  static class MyResource {
+
+    String id;
+    String name;
+    String ask;
+  }
+
+
   public static class Holding {
     public String name;
     BigDecimal percentage;
@@ -195,5 +268,4 @@ public class FundQuote {
         '}';
     }
   }
-
 }

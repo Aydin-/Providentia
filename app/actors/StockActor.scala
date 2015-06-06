@@ -23,10 +23,10 @@ class StockActor(symbol: String) extends Actor {
 
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
-    initialPrices.take(15).to[Queue]
+    initialPrices.take(2).to[Queue]
   }
 
-  val stockTick = context.system.scheduler.schedule(Duration.Zero, 5000.millis, self, FetchLatest)
+  val stockTick = context.system.scheduler.schedule(Duration.Zero, 30.seconds, self, FetchLatest)
 
   def receive = {
     case FetchLatest =>
