@@ -96,7 +96,7 @@ public class Application extends Controller {
               out.write(progressBarMessage);
 
             }
-            FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue().replace("DNB","DNB ") + FundQuote.getFundChange(holdings, userActor));
+            FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue().replace("DNB", "DNB ") + FundQuote.getFundChange(holdings, userActor, jsonNode.get("symbol").textValue()));
             userActor.tell(fundUpdate, StocksActor.stocksActor());
           }
 
