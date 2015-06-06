@@ -71,7 +71,7 @@ updateSkippedStocks = (message) ->
   $("#skipped").append($("<p>").addClass("text-muted").text(message.name))
 
 updateFundChange = (message) ->
-  $("#fund").prepend($("<h4>").text(message.percentage))
+  $("#fund").prepend($("<div>").addClass("alert-info").text(message.percentage))
   $('.bar').width("100%")
   $('.bar').text("Estimation complete")
   $('.progress').removeClass('active');

@@ -9,7 +9,9 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import actors.ProgressBar;
@@ -17,7 +19,7 @@ import actors.SkippedStocks;
 import actors.StocksActor;
 import akka.actor.ActorRef;
 
-public class FundQuote implements StockQuote {
+public class FundQuote {
 
   static Logger log = Logger.getGlobal();
 
@@ -29,7 +31,7 @@ public class FundQuote implements StockQuote {
     for (Holding holding : holdings) {
       try {
         if (holding != null && holding.symbol != null) {
-          String changeToday = "" + StockQuoteImpl.newPercentageStatic(holding.symbol.trim());
+          String changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
           log.info(holding + " Total: " + totalPercentage);
@@ -42,14 +44,14 @@ public class FundQuote implements StockQuote {
           actor.tell(pb, StocksActor.stocksActor());
         } else {
           if (holding != null) {
-            if(skipped == null){
+            if (skipped == null) {
               skipped = "Skipped: -" + (holding.name);
             } else {
               skipped = "-" + (holding.name);
             }
           }
 
-          if(skipped!=null){
+          if (skipped != null) {
             SkippedStocks skippedStocks = new SkippedStocks(skipped);
             actor.tell(skippedStocks, StocksActor.stocksActor());
           }
@@ -58,7 +60,7 @@ public class FundQuote implements StockQuote {
 
       } catch (Exception e) {
         if (holding != null)
-          log.severe("Exception getting: " + holding.name+ " "+holding.percentage);
+          log.severe("Exception getting: " + holding.name + " " + holding.percentage);
         e.printStackTrace();
       }
     }
@@ -133,7 +135,7 @@ public class FundQuote implements StockQuote {
   }
 
 
-  public List<Holding> getFundHoldings(String fund) {
+  public static List<Holding> getFundHoldings(String fund) {
     String csvFile = "public/csv/" + fund + ".csv";
     BufferedReader br = null;
     String line;
@@ -175,14 +177,74 @@ public class FundQuote implements StockQuote {
     return retval;
   }
 
-  @Override
-  public Double newPrice(String symbol) throws IOException {
-    return -1.0;
+  public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
+    String csvFile = "public/csv/" + fund + "_Currency.csv";
+    BufferedReader br = null;
+    String line;
+    Map<String, BigDecimal> retval = new HashMap<>();
+    try {
+
+      br = new BufferedReader(new FileReader(csvFile));
+      while ((line = br.readLine()) != null) {
+
+        String[] lineValues = line.split(",");
+
+        String percentStr = "0";
+        if (lineValues.length > 1) {
+          if (lineValues[1] != null) {
+            percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
+          }
+
+          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
+          String currency = lineValues[0];
+
+          retval.put(currency, percentHolding);
+        }
+      }
+      return retval;
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (br != null) {
+        try {
+          br.close();
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return retval;
   }
 
-  @Override
-  public String newPercentage(String symbol) {
-    return null;
+  private static BigDecimal applyCurrencies(String fundName, BigDecimal percentChange) {
+    Map<String, BigDecimal> currencyMap = getCurrencyHoldings(fundName);
+
+    for (String currency : currencyMap.keySet()) {
+      String currencyQuery = "select * from yahoo.finance.xchange where pair in (\"NOK" + currency + "\")";
+      String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(currencyQuery) + "&region=US&lang=en-US" +
+        ".callbacks&rnd=7780152812483450";
+      try {
+        System.out.println(readUrl(url));
+
+       // ProgressBar pb = new ProgressBar(totalPercentage.intValue());
+       // actor.tell(pb, StocksActor.stocksActor());
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+    return new BigDecimal("0");
+  }
+
+  static class Resource {
+    MyResource resource;
+
+  }
+
+  static class MyResource {
+
+    String id;
+    String name;
+    String ask;
   }
 
 
@@ -206,5 +268,4 @@ public class FundQuote implements StockQuote {
         '}';
     }
   }
-
 }

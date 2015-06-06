@@ -2,7 +2,7 @@ package actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import play.libs.Akka
-import utils.{StockQuoteImpl, StockQuote}
+import utils.StockQuote
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashSet, Queue}
@@ -16,17 +16,17 @@ import scala.concurrent.duration._
 
 class StockActor(symbol: String) extends Actor {
 
-  lazy val stockQuote: StockQuote = new StockQuoteImpl
+  lazy val stockQuote: StockQuote = new StockQuote
   
   protected[this] var watchers: HashSet[ActorRef] = HashSet.empty[ActorRef]
   protected[this] var changeMap:mutable.HashMap[String, String]= new mutable.HashMap[String, String]
 
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
-    initialPrices.take(15).to[Queue]
+    initialPrices.take(2).to[Queue]
   }
 
-  val stockTick = context.system.scheduler.schedule(Duration.Zero, 5000.millis, self, FetchLatest)
+  val stockTick = context.system.scheduler.schedule(Duration.Zero, 30.seconds, self, FetchLatest)
 
   def receive = {
     case FetchLatest =>
@@ -34,10 +34,10 @@ class StockActor(symbol: String) extends Actor {
       val newPrice = stockQuote.newPrice(symbol)
       stockHistory = stockHistory :+ newPrice
       // notify watchers
-      watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuoteImpl.newPercentageStatic(symbol)))
+      watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuote.newPercentageStatic(symbol)))
     case WatchStock(_) =>
       // send the stock history to the user
-      sender ! StockHistory(symbol, stockHistory.asJava, StockQuoteImpl.newPercentageStatic(symbol))
+      sender ! StockHistory(symbol, stockHistory.asJava, StockQuote.newPercentageStatic(symbol))
       // add the watcher to the list
       watchers = watchers + sender
     case UnwatchStock(_) =>
