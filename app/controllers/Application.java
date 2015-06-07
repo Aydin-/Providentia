@@ -43,9 +43,8 @@ public class Application extends Controller {
         final ActorRef userActor = Akka.system().actorOf(Props.create(UserActor.class, out));
 
         in.onMessage(jsonNode -> {
-            FundQuote rfq = new FundQuote();
 
-            List<FundQuote.Holding> holdings = rfq.getFundHoldings(jsonNode.get("symbol").textValue());
+            List<FundQuote.Holding> holdings = FundQuote.getFundHoldings(jsonNode.get("symbol").textValue());
             Double progress = 0.0;
             Double counter = 1.0;
 

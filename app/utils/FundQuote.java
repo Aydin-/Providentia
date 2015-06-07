@@ -25,12 +25,16 @@ import actors.SkippedStocks;
 import actors.StocksActor;
 import akka.actor.ActorRef;
 
-public class FundQuote {
+public final class FundQuote {
 
   static Logger log = Logger.getGlobal();
 
-   private static final String testPath = ConfigFactory.load().getString("testpath");
+  private static final String testPath = ConfigFactory.load().getString("testpath");
   private static final String path = "public/csv/";
+  private static final BigDecimal HUNDRED = new BigDecimal("100.00000000");
+
+  private FundQuote() {
+  }
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor, String fundName) {
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
@@ -43,9 +47,7 @@ public class FundQuote {
           String changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
-          log.info(holding + " Total: " + totalPercentage);
-
-          BigDecimal weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(new BigDecimal("100.0"));
+          BigDecimal weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
           totalWeightedChange = totalWeightedChange.add(weightedChange);
 
           totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
@@ -78,7 +80,8 @@ public class FundQuote {
     }
     totalWeightedChange = applyCurrencies(fundName, totalWeightedChange, actor);
 
-    return " fund changed " + totalWeightedChange + "% since markets last opened, this was calculated using " + totalPercentage + "% of holdings in the fund.";
+    return " fund changed " + totalWeightedChange.setScale(2, BigDecimal.ROUND_HALF_UP) + "% since markets last opened, " +
+      "this was calculated using " + totalPercentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "% of holdings in the fund.";
   }
 
   public static String trimHoldingName(String name) {
@@ -101,6 +104,8 @@ public class FundQuote {
     name = trimHoldingName(name);
     if (name.length() > 15)
       name = name.substring(0, 15);
+
+    log.info("Getting stock symbol for " + name);
 
     String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(name) + "&region=US&lang=en-US&callback=YAHOO.util.UHScriptNodeDataSource" +
       ".callbacks&rnd=7780152812483450";
@@ -231,8 +236,8 @@ public class FundQuote {
     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     cal.add(Calendar.DATE, -1);
 
-    BigDecimal usdChange = new BigDecimal("1.0");
-    CurrencyPage yesterdayPage = new CurrencyPage(), todayPage = new CurrencyPage();
+    BigDecimal usdChange;
+    CurrencyPage yesterdayPage, todayPage;
     try {
 
       String ratesYesterdayURL = "https://openexchangerates.org/api/historical/" + dateFormat.format(cal.getTime()) +
@@ -248,54 +253,39 @@ public class FundQuote {
       BigDecimal usdToNok = todayPage.rates.get("NOK");
       BigDecimal usdToNokYesterday = yesterdayPage.rates.get("NOK");
 
-      usdChange = usdToNok.divide(usdToNokYesterday, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal("100.0")).subtract(new BigDecimal("100.0"));
+      usdChange = usdToNok.divide(usdToNokYesterday, BigDecimal.ROUND_HALF_UP).multiply(HUNDRED).subtract(HUNDRED);
 
     } catch (Exception e) {
       e.printStackTrace();
       return percentChange;
     }
 
-    Map<String, BigDecimal> todayMap = new HashMap<String, BigDecimal>();
-    Map<String, BigDecimal> yesterdayMap = new HashMap<String, BigDecimal>();
-    Map<String, BigDecimal> changeMap = new HashMap<String, BigDecimal>();
-
     BigDecimal totalWeightedChange = new BigDecimal("0.0");
     BigDecimal totalPercentage = new BigDecimal("0.0");
 
     for (String currency : currencyMap.keySet()) {
-      if (currency.equals("NOK")) {
-
-        totalPercentage = totalPercentage.add(currencyMap.get(currency));
-        continue;
-      } else if (currency.equals("USD")) {
-
-        totalPercentage = totalPercentage.add(currencyMap.get(currency));
-        totalWeightedChange = totalWeightedChange.add(usdChange.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP).multiply(currencyMap.get(currency).divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP)));
-        continue;
-      }
-
       ProgressBar pb = new ProgressBar(totalPercentage.intValue());
       if (actor != null)
         actor.tell(pb, StocksActor.stocksActor());
 
-      BigDecimal todayPrice = todayPage.rates.get(currency);
-      BigDecimal yesterdayPrice = yesterdayPage.rates.get(currency);
-      BigDecimal holdingPercentage = currencyMap.get(currency);
+      if (currency.equals("NOK")) {
+        totalPercentage = totalPercentage.add(currencyMap.get(currency));
+      } else if (currency.equals("USD")) {
+        totalPercentage = totalPercentage.add(currencyMap.get(currency));
+        log.info("USD change: " + usdChange);
+        totalWeightedChange = totalWeightedChange.add(usdChange.divide(HUNDRED, BigDecimal.ROUND_HALF_UP).multiply(currencyMap.get(currency).divide(HUNDRED, BigDecimal.ROUND_HALF_UP)));
+      } else {
+        BigDecimal todayPrice = todayPage.rates.get(currency);
+        BigDecimal yesterdayPrice = yesterdayPage.rates.get(currency);
+        BigDecimal holdingPercentage = currencyMap.get(currency);
 
-      totalPercentage.add(holdingPercentage);
-      todayMap.put(currency, todayPrice);
+        totalPercentage = totalPercentage.add(holdingPercentage);
 
-      if (todayPrice == null)
-        throw new NullPointerException("today price null" + currency);
-      if (yesterdayPrice == null)
-        throw new NullPointerException("yesterday price null");
-      if (usdChange == null)
-        throw new NullPointerException("usdchange price null");
+        BigDecimal changeVsNok = usdChange.add(todayPrice.divide(yesterdayPrice.multiply(new BigDecimal("100.000001")).subtract(new BigDecimal("100.0")), 9, BigDecimal.ROUND_HALF_UP));
 
-      BigDecimal changeVsNok = usdChange.add(todayPrice.divide(yesterdayPrice.multiply(new BigDecimal("100.000001")).subtract(new BigDecimal("100.0")), 9, BigDecimal.ROUND_HALF_UP));
-
-      totalWeightedChange = totalWeightedChange.add(changeVsNok.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP).multiply(holdingPercentage.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP)));
-      log.info(currency + "total weighted change: " + totalWeightedChange.toPlainString());
+        totalWeightedChange = totalWeightedChange.add(changeVsNok.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP).multiply(holdingPercentage.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP)));
+        log.info(currency + "total weighted change: " + totalWeightedChange.toPlainString());
+      }
     }
     ProgressBar pb = new ProgressBar(100);
     if (actor != null)
@@ -325,11 +315,6 @@ public class FundQuote {
 
   public static class CurrencyPage {
     Map<String, BigDecimal> rates;
-  }
-
-  public static class Rates {
-    String currency;
-    BigDecimal rate;
   }
 
   public static class Holding {
