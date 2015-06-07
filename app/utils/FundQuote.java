@@ -48,15 +48,10 @@ public final class FundQuote {
           changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
-          if (changeToday != null && changeToday.length() > 0 && holding.percentage != null)
-            weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
-          else
-            weightedChange = new BigDecimal("0.0");
+          weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
 
           totalWeightedChange = totalWeightedChange.add(weightedChange);
-
           totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
-          log.info(totalPercentage.toPlainString());
 
           ProgressBar pb = new ProgressBar(totalPercentage.intValue());
           if (actor != null) {
@@ -71,9 +66,9 @@ public final class FundQuote {
             SkippedStocks skippedStocks = new SkippedStocks(skipped);
             actor.tell(skippedStocks, StocksActor.stocksActor());
           }
-
         }
-
+      } catch (NumberFormatException nfe) {
+        log.severe("Number format exception " + nfe.getMessage());
       } catch (Exception e) {
         if (holding != null)
           log.severe("Exception getting: " + holding.name + " - " + holding.percentage + " - " + changeToday);
