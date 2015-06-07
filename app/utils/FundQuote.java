@@ -37,20 +37,26 @@ public final class FundQuote {
   }
 
   public static String getFundChange(List<Holding> holdings, ActorRef actor, String fundName) {
-    BigDecimal totalWeightedChange = new BigDecimal("0.0");
-    BigDecimal totalPercentage = new BigDecimal("0.0");
+    BigDecimal totalWeightedChange = new BigDecimal("0.0").setScale(9, BigDecimal.ROUND_HALF_UP);
+    BigDecimal totalPercentage = new BigDecimal("0.0").setScale(3, BigDecimal.ROUND_HALF_UP);
     String skipped = null;
-
+    String changeToday = "0.0";
+    BigDecimal weightedChange;
     for (Holding holding : holdings) {
       try {
         if (holding != null && holding.symbol != null) {
-          String changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
+          changeToday = "" + StockQuote.newPercentageStatic(holding.symbol.trim());
           changeToday = changeToday.replace('%', ' ').trim();
 
-          BigDecimal weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
+          if (changeToday != null && changeToday.length() > 0 && holding.percentage != null)
+            weightedChange = (holding.percentage).multiply(new BigDecimal(changeToday)).divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
+          else
+            weightedChange = new BigDecimal("0.0");
+
           totalWeightedChange = totalWeightedChange.add(weightedChange);
 
           totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
+          log.info(totalPercentage.toPlainString());
 
           ProgressBar pb = new ProgressBar(totalPercentage.intValue());
           if (actor != null) {
@@ -58,7 +64,7 @@ public final class FundQuote {
           }
         } else {
           if (holding != null) {
-            skipped = "-" + (holding.name);
+            skipped = "☻" + (holding.name) + " (" + holding.percentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "%)";
           }
 
           if (skipped != null && actor != null) {
@@ -70,7 +76,7 @@ public final class FundQuote {
 
       } catch (Exception e) {
         if (holding != null)
-          log.severe("Exception getting: " + holding.name + " " + holding.percentage);
+          log.severe("Exception getting: " + holding.name + " - " + holding.percentage + " - " + changeToday);
         e.printStackTrace();
       }
     }
@@ -87,21 +93,30 @@ public final class FundQuote {
     if (name.endsWith(" as"))
       name = name.substring(0, name.length() - 3);
 
-    String[] stopWords = {"_", "a-shares", "b-shares", "c-shares", "corp/the", "inc/ii", "asa/the",
-      " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc",
-      "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc"};
+    String[] stopWords = {"_", "a-shares", "b-shares", "c-shares", "corp/the", "inc/ii", "asa/the", " as ", " sa ", "inc/the", "co/the", " ltd",
+      "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc", " cos ", "'s"};
+
+    String[] endWords = {" ag", " as", " sa", " asa", " inc"};
 
     for (String word : stopWords) {
       name = name.replace(word, " ");
     }
+
+    for (String endWord : endWords) {
+      if (name.endsWith(endWord)) {
+        name = name.substring(0, name.length() - 1 - endWord.length());
+      }
+
+    }
+
     name = name.trim();
     return name;
   }
 
   public static String getStockSymbol(String name) {
     name = trimHoldingName(name);
-    if (name.length() > 15)
-      name = name.substring(0, 15);
+    if (name.length() > 10)
+      name = name.substring(0, 10);
 
     log.info("Getting stock symbol for " + name);
 
@@ -164,7 +179,7 @@ public final class FundQuote {
             percentStr = lineValues[1].replace('\"', ' ').replace(',', '.');
           }
 
-          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim());
+          BigDecimal percentHolding = new BigDecimal(percentStr.replace("%", "").trim()).setScale(3, BigDecimal.ROUND_HALF_UP);
 
           if (lineValues.length >= 5) {
             retval.add(new Holding(lineValues[4], lineValues[0], percentHolding));

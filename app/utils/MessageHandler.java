@@ -66,6 +66,8 @@ public class MessageHandler {
         StocksActor.stocksActor().tell(watchStock, userActor);
         userActor.tell(watchStock, StocksActor.stocksActor());
         holding.symbol = symbol;
+      } else {
+        log.severe("Symbol:" + symbol + " rejected.");
       }
 
       progress = counter / holdings.size() * 100.0;
