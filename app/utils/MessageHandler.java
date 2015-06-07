@@ -67,7 +67,7 @@ public class MessageHandler {
         userActor.tell(watchStock, StocksActor.stocksActor());
         holding.symbol = symbol;
       } else {
-        log.severe("Symbol:" + symbol + " rejected.");
+        log.warning("Symbol:" + symbol + " rejected.");
       }
 
       progress = counter / holdings.size() * 100.0;
@@ -88,7 +88,7 @@ public class MessageHandler {
     StringBuffer sb = new StringBuffer();
     for (String symbol : symbolMap.values()) {
       StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
-      sb.append(symbol + " , ");
+      sb = sb.append(symbol + " , ");
     }
     log.log(Level.INFO, "Unwatching " + sb.toString());
 
