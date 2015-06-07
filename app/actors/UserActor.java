@@ -1,19 +1,12 @@
 package actors;
 
-import akka.actor.UntypedActor;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import play.Play;
+import akka.actor.UntypedActor;
 import play.libs.Json;
 import play.mvc.WebSocket;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * The broker between the WebSocket and the StockActor(s).  The UserActor holds the connection and sends serialized
@@ -29,7 +22,6 @@ public class UserActor extends UntypedActor {
   }
 
   public void onReceive(Object message) {
-    Logger.getGlobal().info(message.toString());
     if (message instanceof StockUpdate) {
       // push the stock to the client
       StockUpdate stockUpdate = (StockUpdate) message;
