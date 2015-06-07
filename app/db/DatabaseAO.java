@@ -1,16 +1,31 @@
 package db;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
 public class DatabaseAO {
+
+  private static Connection getHerokuDBConnection() throws URISyntaxException, SQLException {
+    URI dbUri = new URI(System.getenv("DATABASE_URL"));
+
+    String username = dbUri.getUserInfo().split(":")[0];
+    String password = dbUri.getUserInfo().split(":")[1];
+    String dbUrl = "jdbc:postgresql://" + dbUri.getHost() + ':' + dbUri.getPort() + dbUri.getPath();
+
+    return DriverManager.getConnection(dbUrl, username, password);
+  }
+
+
   public static Connection getConnection() throws URISyntaxException, SQLException {
-    //  String dbUrl = "jdbc:postgres://aqelfpqdvqynvh:d7LgWGDfd4mr4Q0KLLunYSwTeQ@ec2-54-247-79-142.eu-west-1.compute.amazonaws.com:5432/d6v0kj46nh1i0p";
+    if(true)
+      return getHerokuDBConnection();
 
     String url = "jdbc:postgresql://localhost/pro";
     Properties props = new Properties();
@@ -45,10 +60,16 @@ public class DatabaseAO {
     try {
       connection = getConnection();
       Statement stmt = connection.createStatement();
-      ResultSet rs = stmt.executeQuery("SELECT * FROM stock_symbols");
 
-      if(!rs.next()) {
-        stmt.executeUpdate("INSERT INTO stock_symbols (SYMBOL, COMPANY) VALUES ('AAPL', 'APPLE')");
+      PreparedStatement ps = connection.prepareStatement("SELECT * FROM stock_symbols WHERE company=?");
+      ps.setString(1, company);
+      ResultSet rs = ps.executeQuery();
+
+      if (!rs.next()) {
+        PreparedStatement psUpdate = connection.prepareStatement("INSERT INTO stock_symbols (SYMBOL, COMPANY) VALUES (?,?)");
+        psUpdate.setString(1, symbol);
+        psUpdate.setString(2, company);
+        psUpdate.executeUpdate();
       }
     } catch (Exception e) {
       e.printStackTrace();
@@ -66,12 +87,14 @@ public class DatabaseAO {
     Connection connection = null;
     try {
       connection = getConnection();
-      Statement stmt = connection.createStatement();
-      ResultSet rs = stmt.executeQuery("SELECT * FROM stock_symbols");
+      PreparedStatement ps = connection.prepareStatement("SELECT * FROM stock_symbols WHERE company=?");
+      ps.setString(1, company);
+      ResultSet rs = ps.executeQuery();
 
-      rs.next();
-      return rs.getString("symbol");
-
+      if (rs.next())
+        return rs.getString("symbol");
+      else
+        return null;
     } catch (SQLException e1) {
       e1.printStackTrace();
     } catch (URISyntaxException e1) {

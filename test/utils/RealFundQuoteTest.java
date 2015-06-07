@@ -6,13 +6,8 @@ import static play.test.Helpers.running;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URISyntaxException;
-import java.sql.SQLException;
 
 import org.junit.Test;
-
-import db.DatabaseConfig;
-import utils.FundQuote;
 
 public class RealFundQuoteTest {
 
