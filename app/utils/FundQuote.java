@@ -58,11 +58,7 @@ public final class FundQuote {
           }
         } else {
           if (holding != null) {
-            if (skipped == null) {
-              skipped = "Skipped: -" + (holding.name);
-            } else {
-              skipped = "-" + (holding.name);
-            }
+            skipped = "-" + (holding.name);
           }
 
           if (skipped != null && actor != null) {
@@ -91,7 +87,9 @@ public final class FundQuote {
     if (name.endsWith(" as"))
       name = name.substring(0, name.length() - 3);
 
-    String[] stopWords = {"corp/the", "inc/ii", "asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc"};
+    String[] stopWords = {"_", "a-shares", "b-shares", "c-shares", "corp/the", "inc/ii", "asa/the",
+      " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc",
+      "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc"};
 
     for (String word : stopWords) {
       name = name.replace(word, " ");
@@ -281,10 +279,11 @@ public final class FundQuote {
 
         totalPercentage = totalPercentage.add(holdingPercentage);
 
-        BigDecimal changeVsNok = usdChange.add(todayPrice.divide(yesterdayPrice.multiply(new BigDecimal("100.000001")).subtract(new BigDecimal("100.0")), 9, BigDecimal.ROUND_HALF_UP));
+        BigDecimal changeVsNok = usdChange.add(todayPrice.divide(yesterdayPrice.multiply(HUNDRED).subtract(HUNDRED), 9, BigDecimal.ROUND_HALF_UP));
+        log.info("change vs NOK" + changeVsNok);
 
-        totalWeightedChange = totalWeightedChange.add(changeVsNok.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP).multiply(holdingPercentage.divide(new BigDecimal("100.0"), BigDecimal.ROUND_HALF_UP)));
-        log.info(currency + "total weighted change: " + totalWeightedChange.toPlainString());
+        totalWeightedChange = totalWeightedChange.add(changeVsNok.multiply(holdingPercentage.divide(HUNDRED, BigDecimal.ROUND_HALF_UP)));
+        log.info(currency + " total weighted change: " + totalWeightedChange.toPlainString());
       }
     }
     ProgressBar pb = new ProgressBar(100);

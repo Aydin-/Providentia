@@ -43,13 +43,13 @@ public class MessageHandler {
         if (symbolFromDb != null) {
           symbol = symbolFromDb;
           symbolMap.put(holding.name, symbol);
-        } else if (holding.symbol != null && holding.symbol.length() > 1) { //symbol in CSV
+        } else if (holding.symbol != null && holding.symbol.length() > 0) { //symbol in CSV
           symbol = holding.symbol;
           symbolMap.put(holding.name, symbol);
           DatabaseAO.insertStockSymbol(holding.name, symbol);
         } else {
           String possibleSymbol = FundQuote.getStockSymbol(holding.name);
-          if (possibleSymbol.length() > 1) {
+          if (possibleSymbol.length() > 0) {
             symbol = possibleSymbol;
             symbolMap.put(holding.name, symbol);
             DatabaseAO.insertStockSymbol(holding.name, symbol);
@@ -60,7 +60,7 @@ public class MessageHandler {
         }
       }
 
-      if (symbol.length() > 1) {
+      if (symbol.length() > 0) {
         log.info("Watching symbol: " + symbol);
         WatchStock watchStock = new WatchStock(symbol.trim());
         StocksActor.stocksActor().tell(watchStock, userActor);
@@ -74,7 +74,7 @@ public class MessageHandler {
       ObjectNode progressBarMessage = Json.newObject();
       progressBarMessage.put("type", "progressbar");
       progressBarMessage.put("totalPercentage", progress.intValue());
-      progressBarMessage.put("progressMessage", ("Getting fund holdings " + ((symbol.length() > 1) ? "[" + symbol + "]" : " ") + " - "));
+      progressBarMessage.put("progressMessage", ("Getting fund holdings " + ((symbol.length() > 0) ? "[" + symbol + "]" : " ") + " - "));
       out.write(progressBarMessage);
 
     }
