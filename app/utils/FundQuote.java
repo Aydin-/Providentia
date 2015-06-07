@@ -91,7 +91,7 @@ public final class FundQuote {
     if (name.endsWith(" as"))
       name = name.substring(0, name.length() - 3);
 
-    String[] stopWords = {"asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012", "company"};
+    String[] stopWords = {"corp/the", "inc/ii", "asa/the", " asa", " as ", " sa ", "inc/the", "co/the", " ltd", " inc", "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc"};
 
     for (String word : stopWords) {
       name = name.replace(word, " ");

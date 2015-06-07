@@ -1,15 +1,7 @@
 package actors
 
-import java.lang
-
-import akka.actor._
-import akka.testkit._
 import org.specs2.mutable._
 import org.specs2.time.NoTimeConversions
-import utils.StockQuote
-
-import scala.collection.immutable.HashSet
-import scala.concurrent.duration._
 
 class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeConversions {
 
@@ -19,7 +11,7 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
    * system.eventStream).
    *
    * It's usually safer to run the tests sequentially. s
-   */
+
   sequential
 
   final class StockActorWithStockQuote(symbol: String, price: Double, watcher: ActorRef) extends StockActor(symbol) {
@@ -32,7 +24,7 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
   }
 
   "A StockActor" should {
-    val symbol = "APPL"
+    val symbol = "AAPL"
 
     "notify watchers when a new stock is received" in {
       // Create a stock actor with a stubbed out stockquote price and watcher
@@ -84,5 +76,5 @@ class StockActorSpec extends TestkitExample with SpecificationLike with NoTimeCo
   //    stockHistory must beAnInstanceOf[StockHistory]
     }
 
-  }
+  }    */
 }

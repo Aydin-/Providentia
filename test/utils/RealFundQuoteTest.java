@@ -1,38 +1,33 @@
+package utils;
+
 import static junit.framework.TestCase.assertNotNull;
 import static play.test.Helpers.fakeApplication;
 import static play.test.Helpers.running;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
 
 import org.junit.Test;
 
+import db.DatabaseConfig;
 import utils.FundQuote;
 
 public class RealFundQuoteTest {
 
   @Test
   public void testGetHoldings() throws IOException {
-
-    running(fakeApplication(), new Runnable() {
-      public void run() {
-        assertNotNull(FundQuote.getFundHoldings("AydinTest"));
-      }
-    });
-
+    running(fakeApplication(), () -> assertNotNull(FundQuote.getFundHoldings("AydinTest")));
   }
 
 
   @Test
   public void testGetFundChange() throws IOException {
-    running(fakeApplication(), new Runnable() {
-      public void run() {
-        String testStr = FundQuote.getFundChange(FundQuote.getFundHoldings("AydinTest"), null, "AydinTest");
-        assertNotNull(testStr);
-      }
+    running(fakeApplication(), () -> {
+      String testStr = FundQuote.getFundChange(FundQuote.getFundHoldings("AydinTest"), null, "AydinTest");
+      assertNotNull(testStr);
     });
-
-
   }
 
   @Test
@@ -46,3 +41,5 @@ public class RealFundQuoteTest {
   }
 
 }
+
+
