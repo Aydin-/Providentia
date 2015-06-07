@@ -14,3 +14,5 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.0.6")
 addSbtPlugin("com.typesafe.sbt" % "sbt-coffeescript" % "1.0.0")
 
 addSbtPlugin("me.lessis" % "bintray-sbt" % "0.2.1")
+
+addSbtPlugin("postgresql" % "postgresql" % "9.1-901-1.jdbc4")
