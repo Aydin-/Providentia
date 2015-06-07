@@ -17,5 +17,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % "2.3.11" % "test",
   "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
   "com.google.code.gson" % "gson" % "2.2.4",
-  "org.codehaus.groovy" % "groovy-all" % "2.4.3"
+  "org.codehaus.groovy" % "groovy-all" % "2.4.3",
+  "postgresql" % "postgresql" % "9.1-901-1.jdbc4"
 )
