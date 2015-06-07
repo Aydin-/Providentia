@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
 
-public class DatabaseConfig {
+public class DatabaseAO {
   public static Connection getConnection() throws URISyntaxException, SQLException {
     //  String dbUrl = "jdbc:postgres://aqelfpqdvqynvh:d7LgWGDfd4mr4Q0KLLunYSwTeQ@ec2-54-247-79-142.eu-west-1.compute.amazonaws.com:5432/d6v0kj46nh1i0p";
 
