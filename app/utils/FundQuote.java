@@ -82,7 +82,7 @@ public final class FundQuote {
 
     return " fund changed " + totalWeightedChange.setScale(2, BigDecimal.ROUND_HALF_UP) + "% since markets last opened, " +
       "this was calculated using " + totalPercentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "% of holdings in the fund." +
-      " Stocks changed " +stockChange.setScale(2, BigDecimal.ROUND_HALF_UP)+"% and currencies changed " +
+      " Stocks changed " + stockChange.setScale(2, BigDecimal.ROUND_HALF_UP) + "% and currencies changed " +
       currencyFactor.multiply(HUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP) + "%";
   }
 
@@ -255,7 +255,7 @@ public final class FundQuote {
     } else {
       if (dayOfWeek == Calendar.SATURDAY) {
         cal.add(Calendar.DATE, -2);
-      } else if (dayOfWeek==Calendar.SUNDAY) {
+      } else if (dayOfWeek == Calendar.SUNDAY) {
         cal.add(Calendar.DATE, -3);
       } else {
         cal.add(Calendar.DATE, -4);
@@ -299,13 +299,10 @@ public final class FundQuote {
       if (actor != null)
         actor.tell(pb, StocksActor.stocksActor());
 
-      if (currency.equals("NOK")) {
-        totalWeightedChange = totalWeightedChange.add(holdingPercentage.divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP));
-      } else if (currency.equals("USD")) {
-
+      if (currency.equals("USD")) {
         log.info("USD change: " + usdChange);
         totalWeightedChange = totalWeightedChange.add(usdChange.multiply(holdingPercentage.divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP)));
-      } else {
+      } else if (!currency.equals("NOK")) {
         BigDecimal todayPrice = todayPage.rates.get(currency);
         BigDecimal yesterdayPrice = yesterdayPage.rates.get(currency);
 
