@@ -32,7 +32,7 @@ public class RealFundQuoteTest {
 
   @Test
   public void testApplyCurrencies() throws IOException {
-    assertNotNull(FundQuote.applyCurrencies("AydinTest", new BigDecimal("1"), null));
+    assertNotNull(FundQuote.getCurrencyFactor("AydinTest", null));
   }
 
 }

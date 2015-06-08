@@ -61,7 +61,7 @@ public class MessageHandler {
       }
 
       if (symbol.length() > 0) {
-        log.info("Watching symbol: " + symbol);
+       // log.info("Watching symbol: " + symbol);
         WatchStock watchStock = new WatchStock(symbol.trim());
         StocksActor.stocksActor().tell(watchStock, userActor);
         userActor.tell(watchStock, StocksActor.stocksActor());

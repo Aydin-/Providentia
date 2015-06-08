@@ -79,7 +79,7 @@ public class StockQuote {
 
       return buffer.toString();
     } catch (Exception e) {
-      log.info("Trying again...");
+      log.warning("Trying again for "+urlString);
       Thread.sleep(500);
       if (attempt < 4)
         return readUrl(urlString, attempt + 1);
