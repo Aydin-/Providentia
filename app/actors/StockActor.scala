@@ -1,8 +1,8 @@
 package actors
 
 import akka.actor.{Actor, ActorRef, Props}
+import bl.StockQuote
 import play.libs.Akka
-import utils.StockQuote
 
 import scala.collection.JavaConverters._
 import scala.collection.immutable.{HashSet, Queue}

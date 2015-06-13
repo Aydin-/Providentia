@@ -1,9 +1,6 @@
-package utils;
+package bl;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
@@ -12,11 +9,12 @@ import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 
+import utils.RESTClient;
 
 /**
  * Get a real stock quote
  */
-public class StockQuote {
+public final class StockQuote {
 
   Logger log = Logger.getGlobal();
   static HashMap<String, String> percentageCache = new HashMap<>();
@@ -33,7 +31,7 @@ public class StockQuote {
         return 0.0;
       }
     } catch (Exception e) {
-      log.log(Level.WARNING, "---- Cannot get current price for:" + symbol);
+      log.log(Level.WARNING, "Cannot get current price for:" + symbol);
       e.printStackTrace();
       return 0.0;
     }
@@ -46,7 +44,7 @@ public class StockQuote {
       }
 
       StockPage stockPage;
-      stockPage = new StockQuote().parseStock(symbol);
+      stockPage = parseStock(symbol);
 
       if (stockPage.query.results.quote.ChangePercentRealtime != null) {
         percentageCache.put(symbol, stockPage.query.results.quote.ChangePercentRealtime);
@@ -65,47 +63,17 @@ public class StockQuote {
     return "0.0";
   }
 
-  private String readUrl(String urlString, int attempt) throws Exception {
 
-    BufferedReader reader = null;
-    try {
-      URL url = new URL(urlString);
-      reader = new BufferedReader(new InputStreamReader(url.openStream()));
-      StringBuffer buffer = new StringBuffer();
-      int read;
-      char[] chars = new char[1024];
-      while ((read = reader.read(chars)) != -1)
-        buffer.append(chars, 0, read);
-
-      return buffer.toString();
-    } catch (Exception e) {
-      log.warning("Trying again for "+urlString);
-      Thread.sleep(500);
-      if (attempt < 4)
-        return readUrl(urlString, attempt + 1);
-      else
-        return "";
-
-    } finally {
-      if (reader != null)
-        reader.close();
-    }
+  public static String getURL(String symbol) {
+    return "https://query.yahooapis.com/v1/public/yql?q=" + URLEncoder.encode("select * from yahoo.finance.quotes ")
+      + URLEncoder.encode("where symbol in ('" + symbol + "')") + "&format=json&diagnostics=true"
+      + "&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
   }
 
-  public StockPage parseStock(String stock) throws Exception {
-    String json = readUrl(getURL(stock.trim()), 1);
+  public static StockPage parseStock(String stock) throws Exception {
+    String json = RESTClient.readUrl(getURL(stock.trim()), 1);
     Gson gson = new Gson();
     return gson.fromJson(json, StockPage.class);
-  }
-
-
-  private static String getURL(String symbol) {
-    String url = "https://query.yahooapis.com/v1/public/yql?q=";
-    url += URLEncoder.encode("select * from yahoo.finance.quotes ");
-    url += URLEncoder.encode("where symbol in ('" + symbol + "')");
-    url += "&format=json&diagnostics=true";
-    url += "&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=";
-    return url;
   }
 
   static class Resource {

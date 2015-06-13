@@ -24,7 +24,7 @@ public class DatabaseAO {
 
 
   public static Connection getConnection() throws URISyntaxException, SQLException {
-    if(true)
+    if(false)
       return getHerokuDBConnection();
 
     String url = "jdbc:postgresql://localhost/pro";

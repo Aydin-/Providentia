@@ -1,20 +1,21 @@
 package controllers
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.Play.current
-import play.api.mvc._
-import play.api.libs.ws._
-import scala.concurrent.Future
-import play.api.libs.json.{Json, JsValue}
 import play.api.Play
-import play.api.libs.json.JsString
+import play.api.Play.current
+import play.api.libs.json.{JsString, JsValue, Json}
+import play.api.libs.ws._
+import play.api.mvc._
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object StockSentiment extends Controller {
 
   case class Tweet(text: String)
-  
+  case class StockJson(text: String)
+
   implicit val tweetReads = Json.reads[Tweet]
-  
+
   def getTextSentiment(text: String): Future[WSResponse] =
     WS.url(Play.current.configuration.getString("sentiment.url").get) post Map("text" -> Seq(text))
 
@@ -25,18 +26,18 @@ object StockSentiment extends Controller {
   def loadSentimentFromTweets(json: JsValue): Seq[Future[WSResponse]] =
     (json \ "statuses").as[Seq[Tweet]] map (tweet => getTextSentiment(tweet.text))
 
-  def getTweets(symbol:String): Future[WSResponse] = {
+  def getTweets(symbol: String): Future[WSResponse] = {
     WS.url(Play.current.configuration.getString("tweet.url").get.format(symbol)).get.withFilter { response =>
       response.status == OK
     }
   }
 
-  
+
   def sentimentJson(sentiments: Seq[WSResponse]) = {
     val neg = getAverageSentiment(sentiments, "neg")
     val neutral = getAverageSentiment(sentiments, "neutral")
     val pos = getAverageSentiment(sentiments, "pos")
-  
+
     val response = Json.obj(
       "probability" -> Json.obj(
         "neg" -> neg,
@@ -44,7 +45,7 @@ object StockSentiment extends Controller {
         "pos" -> pos
       )
     )
-    
+
     val classification =
       if (neutral > 0.5)
         "neutral"
@@ -52,10 +53,10 @@ object StockSentiment extends Controller {
         "neg"
       else
         "pos"
-  
+
     response + ("label" -> JsString(classification))
   }
-  
+
   def get(symbol: String): Action[AnyContent] = Action.async {
     val futureStockSentiments: Future[Result] = for {
       tweets <- getTweets(symbol) // get tweets that contain the stock symbol

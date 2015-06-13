@@ -14,6 +14,7 @@ import actors.StocksActor;
 import actors.UnwatchStock;
 import actors.WatchStock;
 import akka.actor.ActorRef;
+import bl.FundQuote;
 import db.DatabaseAO;
 import play.libs.Json;
 import play.mvc.WebSocket;
@@ -24,7 +25,7 @@ public class MessageHandler {
 
   public void onMessage(JsonNode jsonNode, ActorRef userActor, WebSocket.Out<JsonNode> out) {
 
-    List<FundQuote.Holding> holdings = FundQuote.getFundHoldings(jsonNode.get("symbol").textValue());
+    List<FundQuote.Holding> holdings = CSVReader.getFundHoldings(jsonNode.get("symbol").textValue());
     Double progress = 0.0;
     Double counter = 1.0;
 
