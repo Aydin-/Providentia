@@ -53,7 +53,7 @@ public final class FundQuote {
           }
         } else {
           if (holding != null) {
-            skipped = "☻" + (holding.name) + " (" + holding.percentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "%)";
+            skipped = " • " + (holding.name) + " (" + holding.percentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "%)";
           }
 
           if (skipped != null && actor != null) {
@@ -86,7 +86,7 @@ public final class FundQuote {
     return " fund " + fundChangeDispLabel + " " + fundChangeDisp.abs() + "% since markets last opened, " +
       "this was calculated using " + totalPercentage.setScale(2, BigDecimal.ROUND_HALF_UP) + "% of holdings in the fund." +
       " Stocks changed " + stockChange.setScale(2, BigDecimal.ROUND_HALF_UP) + "% and currencies changed " +
-      currencyFactor.multiply(HUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP) + "%";
+      currencyFactor.multiply(HUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP) + "% versus NOK.";
   }
 
   public static String trimHoldingName(String name) {

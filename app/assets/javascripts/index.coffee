@@ -68,7 +68,7 @@ updateProgressBar = (message) ->
   $('.bar').width(message.totalPercentage + "%")
 
 updateSkippedStocks = (message) ->
-  $("#skipped").append($("<p>").addClass("text-muted").text(message.name))
+  $("#skipped").append($("<p>").addClass("text-bright").text(message.name))
 
 updateFundChange = (message) ->
   $("#fund").prepend($("<div>").addClass("alert alert-info fund-alert").text(message.percentage))

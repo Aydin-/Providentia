@@ -23,7 +23,7 @@ class StockActor(symbol: String) extends Actor {
 
   var stockHistory: Queue[java.lang.Double] = {
     lazy val initialPrices: Stream[java.lang.Double] = stockQuote.newPrice(symbol) #:: initialPrices.map(previous => stockQuote.newPrice(symbol))
-    initialPrices.take(2).to[Queue]
+    initialPrices.take(40).to[Queue]
   }
 
   val stockTick = context.system.scheduler.schedule(Duration.Zero, 30.seconds, self, FetchLatest)
@@ -32,7 +32,7 @@ class StockActor(symbol: String) extends Actor {
     case FetchLatest =>
       // add a new stock price to the history and drop the oldest
       val newPrice = stockQuote.newPrice(symbol)
-      stockHistory = stockHistory :+ newPrice
+      stockHistory = stockHistory.drop(1) :+ newPrice
       // notify watchers
       watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuote.newPercentageStatic(symbol)))
     case WatchStock(_) =>
