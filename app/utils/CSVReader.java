@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.typesafe.config.ConfigFactory;
 
 import bl.FundQuote;
 
-public class CSVReader {
+public final class CSVReader {
   private static final String testPath = ConfigFactory.load().getString("testpath");
-  private static final String path = ConfigFactory.load().getString("path");
+  private static final String path = testPath;
+  public static Logger log = Logger.getGlobal();
 
   public static List<FundQuote.Holding> getFundHoldings(String fund) {
     String csvFile = path + fund + ".csv";
@@ -46,13 +49,13 @@ public class CSVReader {
       }
       return retval;
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Exception :", e);
     } finally {
       if (br != null) {
         try {
           br.close();
         } catch (IOException e) {
-          e.printStackTrace();
+          log.log(Level.WARNING, "Exception :", e);
         }
       }
     }
@@ -85,13 +88,13 @@ public class CSVReader {
       }
       return retval;
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Exception :", e);
     } finally {
       if (br != null) {
         try {
           br.close();
         } catch (IOException e) {
-          e.printStackTrace();
+          log.log(Level.WARNING, "Exception :", e);
         }
       }
     }

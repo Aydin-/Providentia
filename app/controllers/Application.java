@@ -6,6 +6,7 @@ import actors.UserActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import play.libs.Akka;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;
@@ -21,6 +22,7 @@ public class Application extends Controller {
   }
 
   private static MessageHandler handle = new MessageHandler();
+
 
   public static WebSocket<JsonNode> wss() {
     return new WebSocket<JsonNode>() {
@@ -39,4 +41,5 @@ public class Application extends Controller {
       }
     };
   }
+
 }

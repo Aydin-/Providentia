@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class RESTClient {
@@ -23,7 +24,7 @@ public final class RESTClient {
 
       return buffer.toString();
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Exception reading URL: " + urlString, e);
     } finally {
       if (reader != null)
         reader.close();
@@ -49,7 +50,7 @@ public final class RESTClient {
       try {
         Thread.sleep(500);
       } catch (InterruptedException e1) {
-        e1.printStackTrace();
+        log.log(Level.WARNING, "Thread interrupted in readURL " + urlString, e1);
       }
       if (attempt < 4)
         return readUrl(urlString, attempt + 1);
@@ -61,7 +62,7 @@ public final class RESTClient {
         try {
           reader.close();
         } catch (IOException e) {
-          e.printStackTrace();
+          log.log(Level.WARNING, "Exception closing reader after reading URL: " + urlString, e);
         }
     }
   }

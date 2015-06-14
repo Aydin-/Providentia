@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
@@ -20,7 +21,7 @@ import utils.CSVReader;
 import utils.RESTClient;
 
 public final class FundQuote {
-  static Logger log = Logger.getGlobal();
+  public static Logger log = Logger.getGlobal();
 
   public static final BigDecimal HUNDRED = new BigDecimal("100.00");
   public static final BigDecimal ZERO = new BigDecimal("0.0");
@@ -65,7 +66,7 @@ public final class FundQuote {
       } catch (Exception e) {
         if (holding != null)
           log.severe("Exception getting: " + holding.name + " - " + holding.percentage + " - " + changeToday);
-        e.printStackTrace();
+         log.log(Level.WARNING, "Exception :", e);
       }
     }
 
@@ -155,7 +156,7 @@ public final class FundQuote {
       usdChange = usdChange.divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP);
 
     } catch (Exception e) {
-      e.printStackTrace();
+       log.log(Level.WARNING, "Exception :", e);
       return new BigDecimal("1.0");
     }
 
@@ -209,7 +210,7 @@ public final class FundQuote {
     try {
       json = RESTClient.readUrl(url);
     } catch (Exception e) {
-      e.printStackTrace();
+       log.log(Level.WARNING, "Exception :", e);
     }
     if (json == null)
       return "";

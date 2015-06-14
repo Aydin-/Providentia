@@ -16,7 +16,7 @@ import utils.RESTClient;
  */
 public final class StockQuote {
 
-  Logger log = Logger.getGlobal();
+  public static Logger log = Logger.getGlobal();
   static HashMap<String, String> percentageCache = new HashMap<>();
 
   public Double newPrice(String symbol) throws IOException {
@@ -32,7 +32,7 @@ public final class StockQuote {
       }
     } catch (Exception e) {
       log.log(Level.WARNING, "Cannot get current price for:" + symbol);
-      e.printStackTrace();
+       log.log(Level.WARNING, "Exception: ", e);
       return 0.0;
     }
   }
@@ -58,7 +58,7 @@ public final class StockQuote {
       }
 
     } catch (Exception e) {
-      e.printStackTrace();
+       log.log(Level.WARNING, "Exception: ", e);
     }
     return "0.0";
   }

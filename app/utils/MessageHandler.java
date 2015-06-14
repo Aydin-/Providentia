@@ -20,15 +20,17 @@ import play.libs.Json;
 import play.mvc.WebSocket;
 
 public class MessageHandler {
-  static Logger log = Logger.getGlobal();
+  public static Logger log =Logger.getAnonymousLogger();
   private Map<String, String> symbolMap = new HashMap<String, String>(); //From name to symbol
 
   public void onMessage(JsonNode jsonNode, ActorRef userActor, WebSocket.Out<JsonNode> out) {
 
     List<FundQuote.Holding> holdings = CSVReader.getFundHoldings(jsonNode.get("symbol").textValue());
+
     Double progress = 0.0;
     Double counter = 1.0;
 
+    log.info("got mesasage logged");
     for (String symbol : symbolMap.values()) { //unwatch previous fund
       StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
       log.log(Level.INFO, "Unwatching " + symbol);
@@ -79,7 +81,6 @@ public class MessageHandler {
       progressBarMessage.put("totalPercentage", progress.intValue());
       progressBarMessage.put("progressMessage", ("Getting fund holdings " + ((symbol.length() > 0) ? "[" + symbol + "]" : " ") + " - "));
       out.write(progressBarMessage);
-
     }
     FundUpdate fundUpdate = new FundUpdate(jsonNode.get("symbol").textValue().replace("DNB", "DNB ") + FundQuote.getFundChange(holdings, userActor, jsonNode.get("symbol").textValue()));
     userActor.tell(fundUpdate, StocksActor.stocksActor());

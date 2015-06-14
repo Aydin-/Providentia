@@ -9,8 +9,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class DatabaseAO {
+  public static Logger log = Logger.getGlobal();
 
   private static Connection getHerokuDBConnection() throws URISyntaxException, SQLException {
     URI dbUri = new URI(System.getenv("DATABASE_URL"));
@@ -45,12 +48,12 @@ public class DatabaseAO {
       stmt.executeUpdate("CREATE TABLE IF NOT EXISTS stock_symbols (symbol VARCHAR , company VARCHAR )");
 
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Exception :", e);
     } finally {
       if (connection != null) try {
         connection.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Exception :", e);
       }
     }
   }
@@ -59,7 +62,6 @@ public class DatabaseAO {
     Connection connection = null;
     try {
       connection = getConnection();
-      Statement stmt = connection.createStatement();
 
       PreparedStatement ps = connection.prepareStatement("SELECT * FROM stock_symbols WHERE company=?");
       ps.setString(1, company);
@@ -72,12 +74,12 @@ public class DatabaseAO {
         psUpdate.executeUpdate();
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      log.log(Level.WARNING, "Exception :", e);
     } finally {
       if (connection != null) try {
         connection.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Exception :", e);
       }
     }
 
@@ -95,19 +97,16 @@ public class DatabaseAO {
         return rs.getString("symbol");
       else
         return null;
-    } catch (SQLException e1) {
-      e1.printStackTrace();
-    } catch (URISyntaxException e1) {
-      e1.printStackTrace();
+    } catch (SQLException | URISyntaxException e1) {
+      log.log(Level.WARNING, "Exception :", e1);
     } finally {
       if (connection != null) try {
         connection.close();
       } catch (SQLException e) {
-        e.printStackTrace();
+        log.log(Level.WARNING, "Exception :", e);
       }
     }
     return null;
   }
-
 
 }
