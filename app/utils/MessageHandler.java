@@ -24,13 +24,12 @@ public class MessageHandler {
   private Map<String, String> symbolMap = new HashMap<String, String>(); //From name to symbol
 
   public void onMessage(JsonNode jsonNode, ActorRef userActor, WebSocket.Out<JsonNode> out) {
-
+    log.info("got message logged");
     List<FundQuote.Holding> holdings = CSVReader.getFundHoldings(jsonNode.get("symbol").textValue());
 
     Double progress = 0.0;
     Double counter = 1.0;
 
-    log.info("got mesasage logged");
     for (String symbol : symbolMap.values()) { //unwatch previous fund
       StocksActor.stocksActor().tell(new UnwatchStock(StocksActor.getOptionString(symbol)), userActor);
       log.log(Level.INFO, "Unwatching " + symbol);
