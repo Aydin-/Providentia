@@ -17,7 +17,7 @@ import bl.FundQuote;
 
 public final class CSVReader {
   private static final String testPath = ConfigFactory.load().getString("testpath");
-  private static final String path = "public/csv";
+  private static final String path = "public/csv/";
   public static Logger log = Logger.getGlobal();
 
   public static List<FundQuote.Holding> getFundHoldings(String fund) {
