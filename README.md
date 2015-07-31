@@ -17,8 +17,5 @@ stored in Postgres db.
 
 https://providentia-funds.herokuapp.com
 
-License:
-http://apache.org/licenses/LICENSE-2.0
-
 
 
