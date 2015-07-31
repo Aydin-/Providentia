@@ -1,12 +1,12 @@
 ---------------------------------
-Providentia - A fund price oracle
+Providentia - A fund price oracle (mostly just for fun)
 ---------------------------------
 
 Scala, Java, Akka, Play, CoffeeScript mutual fund tracking financial app
 
 Estimates mutual and index fund realtime developments based on stock ticker values
-from yahoo finance API. For international stocks, takes into to account currency developments
-vs. Norwegian Kroner ("the nokkie"), deduced from developments vs USD by necessity (only free currency api I could find)
+from yahoo finance API. For international stocks, takes into account currency developments
+vs. Norwegian Kroner, deduced from developments vs USD by necessity (only free currency api I could find)
 
 Stock ticker charts and actors built on template in activator.
 
