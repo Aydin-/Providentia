@@ -46,10 +46,9 @@ getAxisMax = (data) ->
 
 populateStockHistory = (message) ->
   chart = $("<div>").addClass("chart").prop("id", message.symbol)
-  chartHolder = $("<div>").addClass("chart-holder").append(chart)
-  chartHolder.append($("<p>").text("Realtime percent change " + message.percentage))
+  chart.append($("<p>").text(message.percentage+"%"))
   detailsHolder = $("<div>").addClass("details-holder")
-  flipper = $("<div>").addClass("flipper").append(chartHolder).prepend(detailsHolder).attr("data-content", message.symbol)
+  flipper = $("<div>").addClass("flipper").append(chart).prepend(detailsHolder).attr("data-content", message.symbol)
   flipContainer = $("<div>").addClass("flip-container").append(flipper).click (event) ->
     handleFlip($(this))
   li = $("<li>").prepend(flipContainer)
@@ -96,34 +95,4 @@ updateStockChart = (message) ->
     plot.draw()
 
 handleFlip = (container) ->
-  if (container.hasClass("flipped"))
-    container.removeClass("flipped")
-    container.find(".details-holder").empty()
-  else
-    container.addClass("flipped")
-    # fetch stock details and tweet
-    $.ajax
-      url: "/sentiment/" + container.children(".flipper").attr("data-content")
-      dataType: "json"
-      context: container
-      success: (data) ->
-        detailsHolder = $(this).find(".details-holder")
-        detailsHolder.empty()
-        switch data.label
-          when "pos"
-            detailsHolder.append($("<h4>").text("The tweets say BUY!"))
-            detailsHolder.append($("<img>").attr("src", "/assets/images/buy.png"))
-          when "neg"
-            detailsHolder.append($("<h4>").text("The tweets say SELL!"))
-            detailsHolder.append($("<img>").attr("src", "/assets/images/sell.png"))
-          else
-            detailsHolder.append($("<h4>").text("The tweets say HOLD!"))
-            detailsHolder.append($("<img>").attr("src", "/assets/images/hold.png"))
-      error: (jqXHR, textStatus, error) ->
-        detailsHolder = $(this).find(".details-holder")
-        detailsHolder.empty()
-        detailsHolder.append($("<h4>").text("Error: " + JSON.parse(jqXHR.responseText).error))
-    # display loading info
-    detailsHolder = container.find(".details-holder")
-    detailsHolder.append($("<h4>").text("Determining whether you should buy or sell based on the sentiment of recent tweets..."))
-    detailsHolder.append($("<div>").addClass("progress progress-striped active").append($("<div>").addClass("bar").css("width", "100%")))
+# detailsHolder.append($("<div>").addClass("progress progress-striped active").append($("<div>").addClass("bar").css("width", "100%")))

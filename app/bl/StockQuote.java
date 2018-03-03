@@ -1,15 +1,14 @@
 package bl;
 
+import com.google.gson.Gson;
+import utils.RESTClient;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import com.google.gson.Gson;
-
-import utils.RESTClient;
 
 /**
  * Get a real stock quote

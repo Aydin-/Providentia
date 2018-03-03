@@ -1,12 +1,10 @@
 package controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import actors.UserActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import com.fasterxml.jackson.databind.JsonNode;
 import play.libs.Akka;
-import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.WebSocket;

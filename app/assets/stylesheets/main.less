@@ -36,9 +36,8 @@ ul {
 
 li {
   float: left;
-  height: 200px;
   margin: 0 10px 10px 0;
-  width: 250px;
+
 }
 
 body {
@@ -72,7 +71,7 @@ body {
   top: 70px;
   right: 0px;
   text-align: right;
-  width: 160px;
+  width: 120px;
   height: 50%;
   background: #f5f5f5;
   color: #63db55 !important;
@@ -87,9 +86,8 @@ body {
 
 .flip-container {
   .perspective(250);
-  margin-bottom: 20px;
   &:hover .flipper {
-    .transform(10deg);
+    .transform(20deg);
   }
   &.flipped .flipper {
     .transform(180deg);
@@ -97,14 +95,14 @@ body {
 }
 
 .flipper {
-  height: 190px;
-  width: 250px;
+  height: 60px;
+  width: 125px;
 
-  background-color: #fafafa;
+  background-color: #FFFFFF;
   border: 1px solid #ddd;
 
   .border-radius(4px);
-
+  font-size: 12px;
   cursor: pointer;
 
   -webkit-transition: 0.6s;
@@ -120,8 +118,6 @@ body {
     position: absolute;
     top: -1px;
     left: -1px;
-    padding: 3px 7px;
-    font-size: 12px;
     font-weight: bold;
     background-color: #ffffff;
     border: 1px solid #ddd;
@@ -132,11 +128,10 @@ body {
 }
 
 .chart-holder {
-  position: relative;
+position:absolute;
   top: 0 !important;
-  width: 235px;
-  height: 190px;
-  left: 10px;
+  width: 125px;
+  height: 60px;
   z-index: auto;
   -webkit-backface-visibility: hidden;
   -moz-backface-visibility: hidden;
@@ -147,20 +142,19 @@ body {
   z-index: 2;
   & p {
     position: relative;
-    bottom: 20px;
-    left: 20px;
     font-size: 10px;
-    color: #aaaaaa;
+    color: #FFFFFF;
     font-style: italic;
   }
 }
 
 .details-holder {
+    font-size: 12px;
   .transform(180deg);
   text-align: center;
   & h4 {
     position: absolute;
-    top: 10px;
+    font-size: 12px;
     padding: 0px;
   }
   & .progress {
@@ -173,23 +167,24 @@ body {
     box-shadow: none;
   }
   & img {
-    height: 50px;
-    width: 50px;
+    height: 25px;
+    width: 25px;
   }
 }
 
 .chart {
+  background:black;
+  opacity: 0.4;
   position: relative;
-  width: 230px;
-  height: 105px;
-  margin: 20px 10px 10px;
+  width: 120px;
+  height: 55px;
 }
 
 .fundContainer {
   position: relative;
   font-size: 14pt;
   margin: 5px auto;
-  width: 1000px;
+  width: 1100px;
 
 }
 
