@@ -10,10 +10,6 @@ import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-/**
- *
- */
-
 class StockActor(symbol: String) extends Actor {
 
   lazy val stockQuote: StockQuote = new StockQuote
@@ -30,7 +26,6 @@ class StockActor(symbol: String) extends Actor {
 
   def receive = {
     case FetchLatest =>
-      // add a new stock price to the history and drop the oldest
       val newPrice = stockQuote.newPrice(symbol)
       stockHistory = stockHistory.drop(1) :+ newPrice
       // notify watchers
@@ -72,7 +67,6 @@ object StocksActor {
   lazy val stocksActor: ActorRef = Akka.system.actorOf(Props(classOf[StocksActor]))
   def getOptionString(symbol:String) = Option (symbol)
 }
-
 
 case object FetchLatest
 
