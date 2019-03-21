@@ -10,10 +10,6 @@ import play.mvc.Result;
 import play.mvc.WebSocket;
 import utils.MessageHandler;
 
-
-/**
- * The main web controller that handles returning the index page, setting up a WebSocket, and watching a fund.
- */
 public class Application extends Controller {
   public static Result index() {
     return ok(views.html.index.render());

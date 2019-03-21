@@ -16,20 +16,19 @@ import com.typesafe.config.ConfigFactory;
 import bl.FundQuote;
 
 public final class CSVReader {
-  private static final String testPath = ConfigFactory.load().getString("testpath");
-  private static final String path = "public/csv/";
+    
+  private static final String TEST_PATH = ConfigFactory.load().getString("TEST_PATH");
+  private static final String PATH = "public/csv/";
   public static Logger log = Logger.getGlobal();
 
   public static List<FundQuote.Holding> getFundHoldings(String fund) {
-
-    String csvFile = path + fund + ".csv";
-    log.info("Reading csv "+ csvFile);
-    BufferedReader br = null;
-    String line;
+    final String csvFile = PATH + fund + ".csv";
     List<FundQuote.Holding> retval = new ArrayList<>();
-    try {
+    String line;
 
-      br = new BufferedReader(new FileReader(csvFile));
+    log.info("Reading CSV "+ csvFile);
+    
+    try (BufferedReader br = new BufferedReader(new FileReader(csvFile))){
       while ((line = br.readLine()) != null) {
 
         String[] lineValues = line.split(",");
@@ -49,29 +48,19 @@ public final class CSVReader {
           }
         }
       }
-      return retval;
     } catch (Exception e) {
-      log.log(Level.WARNING, "Exception :", e);
-    } finally {
-      if (br != null) {
-        try {
-          br.close();
-        } catch (IOException e) {
-          log.log(Level.WARNING, "Exception :", e);
-        }
-      }
+      log.log(Level.SEVERE, "Exception :", e);
     }
+
     return retval;
   }
 
   public static Map<String, BigDecimal> getCurrencyHoldings(String fund) {
-    String csvFile = path + fund + "_Currency.csv";
-    BufferedReader br = null;
+    final String csvFile = PATH + fund + "_Currency.csv";
     String line;
     Map<String, BigDecimal> retval = new HashMap<>();
-    try {
 
-      br = new BufferedReader(new FileReader(csvFile));
+    try (BufferedReader br = new BufferedReader(new FileReader(csvFile))){
       while ((line = br.readLine()) != null) {
 
         String[] lineValues = line.split(",");
@@ -88,17 +77,9 @@ public final class CSVReader {
           retval.put(currency, percentHolding);
         }
       }
-      return retval;
+
     } catch (Exception e) {
-      log.log(Level.WARNING, "Exception :", e);
-    } finally {
-      if (br != null) {
-        try {
-          br.close();
-        } catch (IOException e) {
-          log.log(Level.WARNING, "Exception :", e);
-        }
-      }
+      log.log(Level.SEVERE, "Exception :", e);
     }
     return retval;
   }

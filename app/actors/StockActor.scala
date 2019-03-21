@@ -26,15 +26,15 @@ class StockActor(symbol: String) extends Actor {
 
   def receive = {
     case FetchLatest =>
+
       val newPrice = stockQuote.newPrice(symbol)
       stockHistory = stockHistory.drop(1) :+ newPrice
-      // notify watchers
       watchers.foreach(_ ! StockUpdate(symbol, newPrice, StockQuote.newPercentageStatic(symbol)))
+
     case WatchStock(_) =>
-      // send the stock history to the user
       sender ! StockHistory(symbol, stockHistory.asJava, StockQuote.newPercentageStatic(symbol))
-      // add the watcher to the list
       watchers = watchers + sender
+
     case UnwatchStock(_) =>
       watchers = watchers - sender
       if (watchers.size == 0) {
@@ -50,7 +50,6 @@ class StockActor(symbol: String) extends Actor {
 class StocksActor extends Actor {
   def receive = {
     case watchStock @ WatchStock(symbol) =>
-      // get or create the StockActor for the symbol and forward this message
       context.child(symbol).getOrElse {
         context.actorOf(Props(new StockActor(symbol)), symbol)
       } forward watchStock

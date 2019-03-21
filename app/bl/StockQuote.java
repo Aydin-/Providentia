@@ -3,6 +3,8 @@ package bl;
 import com.google.gson.Gson;
 import utils.RESTClient;
 
+import java.math.BigDecimal;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -10,12 +12,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Get a real stock quote
- */
 public final class StockQuote {
 
 	public static Logger log = Logger.getGlobal();
+	public static final String STOCK_API = "https://cloud.iexapis.com/beta/tops";
+	public static final String STOCK_PREVIOUS_DAY_API = "https://cloud.iexapis.com/beta/stock/";
 	static HashMap<String, String> percentageCache = new HashMap<>();
 
 	public Double newPrice(String symbol) throws IOException {
@@ -42,8 +43,17 @@ public final class StockQuote {
 				return percentageCache.remove(symbol);
 			}
 
-			Quote stockPage;
-			stockPage = parseStock(symbol);
+			Quote stockPageYesterday = parseYeterdaysStock(symbol);
+			Quote stockPageToday = parseStock(symbol);
+
+			log.log(Level.ALL, stockPageToday.askPrice);
+			log.log(Level.ALL, stockPageYesterday.askPrice);
+			
+			if(true) {
+				return "" + new BigDecimal(stockPageToday.askPrice).divide(new BigDecimal(stockPageYesterday.askPrice), BigDecimal.ROUND_CEILING);
+			}
+
+
 /*
 			if (stockPage.query.results.quote.ChangePercentRealtime != null) {
 				percentageCache.put(symbol, stockPage.query.results.quote.ChangePercentRealtime);
@@ -63,7 +73,11 @@ public final class StockQuote {
 	}
 
 	public static String getURL(String symbol) {
-		return "https://cloud.iexapis.com/beta/tops?token=pk_610d9fbe8aa24426b8315dd7f912728d&symbols=" + symbol;
+		return STOCK_API + "?token=pk_610d9fbe8aa24426b8315dd7f912728d&symbols=" + symbol;
+	}
+
+	public static String getYesterdayURL(String symbol) {
+		return STOCK_PREVIOUS_DAY_API + symbol + "/previous?token=pk_610d9fbe8aa24426b8315dd7f912728d&symbols=";
 	}
 
 	public static Quote parseStock(String stock) throws Exception {
@@ -72,11 +86,17 @@ public final class StockQuote {
 		return gson.fromJson(json, Quote.class);
 	}
 
+	public static Quote parseYeterdaysStock(String stock) throws Exception {
+		String json = RESTClient.readUrl(getYesterdayURL(stock.trim()), 1);
+		Gson gson = new Gson();
+		return gson.fromJson(json, Quote.class);
+	}
+
 	static class Resource {
 		MyResource resource;
 
 	}
-
+	
 	static class MyResource {
 
 		String classname;

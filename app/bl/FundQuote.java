@@ -23,20 +23,22 @@ import utils.RESTClient;
 public final class FundQuote {
 	public static Logger log = Logger.getGlobal();
 
-	public static final BigDecimal HUNDRED = new BigDecimal("100.00");
-	public static final BigDecimal ZERO = BigDecimal.ZERO;
+	public static final String EXCHANGE_RATE_API = "https://api.exchangeratesapi.io/";
 	public static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	public static final String CURRENCY = "NOK";
+	public static final BigDecimal HUNDRED = new BigDecimal(100);
 
 	private FundQuote() {
 	}
 
 	public static String getFundChange(List<Holding> holdings, ActorRef actor, String fundName) {
-		
+
 		BigDecimal totalWeightedChange = BigDecimal.ZERO.setScale(9, BigDecimal.ROUND_HALF_UP);
 		BigDecimal totalPercentage = BigDecimal.ZERO.setScale(3, BigDecimal.ROUND_HALF_UP);
 		String skipped = null;
 		String changeToday = "0.0";
 		BigDecimal weightedChange;
+
 		for (Holding holding : holdings) {
 			try {
 				if (holding != null && holding.symbol != null) {
@@ -47,7 +49,7 @@ public final class FundQuote {
 							BigDecimal.ROUND_HALF_UP);
 
 					totalWeightedChange = totalWeightedChange.add(weightedChange);
-					totalPercentage = totalPercentage.add(holding.percentage); // percent of fund
+					totalPercentage = totalPercentage.add(holding.percentage);
 
 					ProgressBar pb = new ProgressBar(totalPercentage.intValue());
 					if (actor != null) {
@@ -67,57 +69,32 @@ public final class FundQuote {
 			} catch (NumberFormatException nfe) {
 				log.severe("Number format exception " + nfe.getMessage());
 			} catch (Exception e) {
-				if (holding != null)
+				if (holding != null) {
 					log.severe("Exception getting: " + holding.name + " - " + holding.percentage + " - " + changeToday);
+				}
 				log.log(Level.WARNING, "Exception :", e);
 			}
 		}
 
 		BigDecimal currencyFactor = getCurrencyFactor(fundName, actor);
 		BigDecimal stockChange = totalWeightedChange;
-		totalWeightedChange = (HUNDRED.add(stockChange)).multiply((new BigDecimal("1.0").add(currencyFactor)))
+		totalWeightedChange = (HUNDRED.add(stockChange)).multiply((BigDecimal.ONE.add(currencyFactor)))
 				.subtract(HUNDRED);
 
 		BigDecimal fundChangeDisp = totalWeightedChange.setScale(2, BigDecimal.ROUND_HALF_UP);
 		String fundChangeDispLabel = "changed";
 
-		if (fundChangeDisp.compareTo(ZERO) > 0) {
+		if (fundChangeDisp.compareTo(BigDecimal.ZERO) > 0) {
 			fundChangeDispLabel = "increased";
-		} else if (fundChangeDisp.compareTo(ZERO) < 0) {
+		} else if (fundChangeDisp.compareTo(BigDecimal.ZERO) < 0) {
 			fundChangeDispLabel = "decreased";
-		}
+		} 
 
 		return " fund " + fundChangeDispLabel + " " + fundChangeDisp.abs() + "% since markets last opened, "
 				+ "this was calculated using " + totalPercentage.setScale(2, BigDecimal.ROUND_HALF_UP)
 				+ "% of holdings in the fund." + " Stocks changed " + stockChange.setScale(2, BigDecimal.ROUND_HALF_UP)
 				+ "% and currencies changed " + currencyFactor.multiply(HUNDRED).setScale(2, BigDecimal.ROUND_HALF_UP)
 				+ "% versus NOK.";
-	}
-
-	public static String trimHoldingName(String name) {
-		name = name.toLowerCase();
-		if (name.startsWith("as "))
-			name = name.substring(2);
-
-		String[] stopWords = { "_", "a-shares", "b-shares", "c-shares", "corp/the", "inc/ii", "asa/the", " as ", " sa ",
-				"inc/the", "co/the", " ltd", "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc",
-				" cos ", "'s" };
-
-		String[] endWords = { " ag", " as", " sa", " asa", " inc" };
-
-		for (String word : stopWords) {
-			name = name.replace(word, " ");
-		}
-
-		for (String endWord : endWords) {
-			if (name.endsWith(endWord)) {
-				name = name.substring(0, name.length() - 1 - endWord.length());
-			}
-
-		}
-
-		name = name.trim();
-		return name;
 	}
 
 	public static Calendar getPreviousCloseDate() {
@@ -133,7 +110,7 @@ public final class FundQuote {
 			} else if (dayOfWeek == Calendar.SUNDAY) {
 				cal.add(Calendar.DATE, -3);
 			} else {
-				cal.add(Calendar.DATE, -4);
+				cal.add(Calendar.DATE, 0); // should never happen
 			}
 		}
 		return cal;
@@ -144,19 +121,22 @@ public final class FundQuote {
 
 		BigDecimal usdChange;
 		FundQuote.CurrencyPage yesterdayPage, todayPage;
-		String ratesYesterdayURL = "https://openexchangerates.org/api/historical/"
-				+ dateFormat.format(getPreviousCloseDate().getTime()) + ".json?app_id=90abee42f3444757a1cd0fead7febc96";
-		String ratesLatestURL = "https://openexchangerates.org/api/latest.json?app_id=90abee42f3444757a1cd0fead7febc96";
+
+		Calendar cal = Calendar.getInstance();
+
+		String ratesTodayURL = EXCHANGE_RATE_API + dateFormat.format(cal.getTime()) + "?base=" + CURRENCY;
+		String ratesYesterdayURL = EXCHANGE_RATE_API + dateFormat.format(getPreviousCloseDate().getTime())
+				+ "?base=NOK";
 
 		try {
 			String yesterdayJson = RESTClient.readUrl(ratesYesterdayURL);
-			String todayJson = RESTClient.readUrl(ratesLatestURL);
+			String todayJson = RESTClient.readUrl(ratesTodayURL);
 
 			yesterdayPage = parseCurrencyPage(yesterdayJson);
 			todayPage = parseCurrencyPage(todayJson);
 
-			BigDecimal usdToNok = todayPage.rates.get("NOK");
-			BigDecimal usdToNokYesterday = yesterdayPage.rates.get("NOK");
+			BigDecimal usdToNok = todayPage.rates.get(CURRENCY);
+			BigDecimal usdToNokYesterday = yesterdayPage.rates.get(CURRENCY);
 
 			usdChange = usdToNok.divide(usdToNokYesterday, 9, BigDecimal.ROUND_HALF_UP).multiply(HUNDRED)
 					.subtract(HUNDRED);
@@ -164,7 +144,7 @@ public final class FundQuote {
 
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Exception :", e);
-			return new BigDecimal("1.0");
+			return BigDecimal.ONE;
 		}
 
 		BigDecimal totalWeightedChange = BigDecimal.ZERO;
@@ -183,7 +163,7 @@ public final class FundQuote {
 				log.info("USD change: " + usdChange);
 				totalWeightedChange = totalWeightedChange
 						.add(usdChange.multiply(holdingPercentage.divide(HUNDRED, 9, BigDecimal.ROUND_HALF_UP)));
-			} else if (!currency.equals("NOK")) {
+			} else if (!currency.equals(CURRENCY)) {
 				BigDecimal todayPrice = todayPage.rates.get(currency);
 				BigDecimal yesterdayPrice = yesterdayPage.rates.get(currency);
 
@@ -209,34 +189,63 @@ public final class FundQuote {
 
 	public static String getStockSymbol(String name) {
 		name = trimHoldingName(name);
-		if (name.length() > 10)
+		
+		if (name.length() > 10) {
 			name = name.substring(0, 10);
+		}
 
 		log.info("Getting stock symbol for " + name);
 
 		String url = "https://s.yimg.com/aq/autoc?query=" + URLEncoder.encode(name)
 				+ "&region=US&lang=en-US&callback=YAHOO.util.UHScriptNodeDataSource"
 				+ ".callbacks&rnd=7780152812483450";
+		
 		String json = null;
 		try {
 			json = RESTClient.readUrl(url);
 		} catch (Exception e) {
-			log.log(Level.WARNING, "Exception :", e);
+			log.log(Level.WARNING, "Exception reading url:" + url);
 		}
-		if (json == null)
+		if (json == null) {
 			return "";
+		}
 
-		int test = json.indexOf("symbol");
+		int symbolIndex = json.indexOf("symbol");
 
-		if (test != -1)
-			return json.substring(test + 9, json.indexOf(',', test + 9)).replace('\"', ' ').trim();
-		else
+		if (symbolIndex != -1) {
+			return json.substring(symbolIndex + 9, json.indexOf(',', symbolIndex + 9)).replace('\"', ' ').trim();
+		} else {
 			return "";
+		}
+	}
+	
+	public static String trimHoldingName(String name) {
+		String[] stopWords = { "_", "a-shares", "b-shares", "c-shares", "corp/the", "inc/ii", "asa/the", " as ", " sa ",
+				"inc/the", "co/the", " ltd", "the ", "-", " co ", "2012", "company", " & co", "/de", "/mn", "plc",
+				" cos ", "'s" };
+
+		String[] endWords = { " ag", " as", " sa", " asa", " inc" };
+
+		name = name.toLowerCase();
+		if (name.startsWith("as "))
+			name = name.substring(2);
+
+		for (String word : stopWords) {
+			name = name.replace(word, " ");
+		}
+
+		for (String endWord : endWords) {
+			if (name.endsWith(endWord)) {
+				name = name.substring(0, name.length() - 1 - endWord.length());
+			}
+		}
+
+		return name.trim();
 	}
 
+
 	public static CurrencyPage parseCurrencyPage(String json) throws Exception {
-		Gson gson = new Gson();
-		return gson.fromJson(json, CurrencyPage.class);
+		return new Gson().fromJson(json, CurrencyPage.class);
 	}
 
 	public static class CurrencyPage {
@@ -244,9 +253,9 @@ public final class FundQuote {
 	}
 
 	public static class Holding {
-		public String name;
-		BigDecimal percentage;
-		public String symbol;
+		public final String name;
+		public final BigDecimal percentage;
+		public final String symbol;
 
 		public Holding(String symbol, String name, BigDecimal percentage) {
 			this.symbol = symbol;
