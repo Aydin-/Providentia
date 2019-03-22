@@ -28,7 +28,8 @@ class DatabaseAO {
   }
   
     def getConnection():Connection ={
-      if("heroku".equalsIgnoreCase(Play.current.configuration.getString("database").get)) {
+     if(true) {
+     // if("heroku".equalsIgnoreCase(Play.current.configuration.getString("database").get)) {
         return getHerokuDBConnection();
       }
 
